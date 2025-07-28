@@ -376,7 +376,7 @@
   }
 
   .shad-input {
-    @apply h-12 bg-[#1f1f22] border-none focus-visible:ring-1 focus-visible:ring-offset-1 ring-offset-[#7878A3];
+    @apply bg-[#1f1f22] border-none focus-visible:ring-1 focus-visible:ring-offset-1 ring-offset-[#7878A3];
   }
 
   .shad-textarea {
@@ -415,6 +415,46 @@
 .bg-light-4 {
   background-color: #5c5c7b;
 }
-.bg-primary-600 {
+.bg-primary-500 {
   background-color: #5d5fef;
+}
+
+.text-primary-500 {
+  color: #877eff;
+}
+.text-primary-600 {
+  color: #5d5fef;
+}
+.text-secondary-500 {
+  color: #ffb620;
+}
+.text-off-white {
+  color: #d0dfff;
+}
+.text-red {
+  color: #ff5a5a;
+}
+.text-dark-1 {
+  color: #000000;
+}
+.text-dark-2 {
+  color: #09090a;
+}
+.text-dark-3 {
+  color: #101012;
+}
+.text-dark-4 {
+  color: #1f1f22;
+}
+.text-light-1 {
+  color: #ffffff;
+}
+.text-light-2 {
+  color: #efefef;
+}
+.text-light-3 {
+  color: rgb(103, 103, 103);
+}
+.text-light-4 {
+  color: #5c5c7b;
 }
