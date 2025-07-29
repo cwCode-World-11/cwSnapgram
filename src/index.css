@@ -226,6 +226,25 @@
     background: #7878a3;
   }
 
+  body::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: #09090a;
+  }
+
+  body::-webkit-scrollbar-thumb {
+    background: #5c5c7b;
+    border-radius: 50px;
+  }
+
+  body::-webkit-scrollbar-thumb:hover {
+    background: #7878a3;
+  }
+
   .common-container {
     @apply flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14;
   }
@@ -328,7 +347,7 @@
   }
 
   .grid-post_link {
-    @apply flex rounded-[24px] border  overflow-hidden cursor-pointer w-full h-full;
+    @apply flex rounded-[24px] border overflow-hidden cursor-pointer w-full h-full;
   }
 
   .grid-post_user {
@@ -346,7 +365,7 @@
 
   /* Post Card */
   .post-card {
-    @apply bg-[#09090a] rounded-3xl border  p-5 lg:p-7 w-full max-w-screen-sm;
+    @apply bg-[#09090a] rounded-3xl p-2 md:p-5 lg:p-7 w-full max-w-screen-sm;
   }
 
   .post-card_img {
@@ -360,7 +379,7 @@
 
   /* User card */
   .user-card {
-    @apply flex justify-center items-center flex-col gap-4 border  rounded-[20px] px-5 py-8;
+    @apply flex justify-center items-center flex-col gap-4 border  rounded-[20px] px-5 py-6;
   }
 }
 
@@ -414,6 +433,9 @@
 }
 .bg-light-4 {
   background-color: #5c5c7b;
+}
+.dark-dark-4 {
+  color: #1f1f22;
 }
 .bg-primary-500 {
   background-color: #5d5fef;
