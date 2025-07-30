@@ -15,13 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../../components/ui/form";
-
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z
-    .string()
-    .min(8, { message: "Password must be atleast 8 characters!" }),
-});
+import { SigninValidation as formSchema } from "../../lib/validation";
 
 const Login = () => {
   const isLoading = false;

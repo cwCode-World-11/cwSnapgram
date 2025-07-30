@@ -4,7 +4,7 @@ import PostStats from "./PostStats";
 const GridPostList = ({ posts, showUser = true, showStats = true }) => {
   const user = { id: "123" };
   return (
-    <ul className="grid-container">
+    <ul className="grid-container custom-scrollbar">
       {posts.map((post) => (
         <li key={post.$id} className="relative min-w-80 h-80">
           <Link

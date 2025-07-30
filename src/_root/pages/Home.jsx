@@ -27,7 +27,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="home-creators custom-scrollbar">
+      <div className="home-creators hidden custom-scrollbar">
         <h3 className="h3-bold text-light-1">Top Creators</h3>
         {isUserLoading && !creators ? (
           <Loader />

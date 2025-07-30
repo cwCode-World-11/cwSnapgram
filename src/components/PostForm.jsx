@@ -16,19 +16,8 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import FileUploader from "./FileUploader";
 import Loader from "./Loader";
-
-const PostValidation = z.object({
-  caption: z
-    .string()
-    .min(5, { message: "Minimum 5 characters." })
-    .max(2200, { message: "Maximum 2,200 caracters" }),
-  file: z.custom(),
-  location: z
-    .string()
-    .min(1, { message: "This field is required" })
-    .max(1000, { message: "Maximum 1000 characters." }),
-  tags: z.string(),
-});
+import { PostValidation } from "../lib/validation";
+import toast from "react-hot-toast";
 
 const PostForm = ({ post, action }) => {
   const navigate = useNavigate();
@@ -69,7 +58,8 @@ const PostForm = ({ post, action }) => {
     //     title: `${action} post failed. Please try again.`,
     //   });
     // }
-    // navigate("/");
+    toast("Something happens");
+    navigate("/");
   };
 
   return (

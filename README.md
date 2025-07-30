@@ -1,5 +1,5 @@
 <div align="center">
-<h1>Thank you for amazing tutorial <b>Andrian</b></h1>
+<h1>Thank you for amazing tutorial <span style="color:#ffbf00">Adrian hajdin</span></h1>
 <div>
       <a href="https://www.youtube.com/@javascriptmastery" target="_blank">Youtube Channel</a> - 
       <a href="https://youtu.be/_W3R2VwRyF4?feature=shared" target="_blank">Tutorial Video</a> - 
@@ -117,6 +117,8 @@ VITE_APPWRITE_USER_COLLECTION_ID=
 VITE_APPWRITE_POST_COLLECTION_ID=
 VITE_APPWRITE_SAVES_COLLECTION_ID=
 ```
+
+## NOTE: i am using supabase
 
 Replace the placeholder values with your actual Appwrite credentials. You can obtain these credentials by signing up on the [Appwrite website](https://appwrite.io/).
 

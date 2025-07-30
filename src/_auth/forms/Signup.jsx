@@ -15,17 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../../components/ui/form";
-
-const formSchema = z.object({
-  name: z.string().min(3, { message: "Name must be atleast 3 characters." }),
-  username: z
-    .string()
-    .min(3, { message: "username must be unique and atleast 3 characters." }),
-  email: z.string().email(),
-  password: z
-    .string()
-    .min(8, { message: "Password must be atleast 8 characters!" }),
-});
+import { SignupValidation as formSchema } from "../../lib/validation";
 
 const Signup = () => {
   const isLoading = true;
