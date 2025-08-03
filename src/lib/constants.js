@@ -82,6 +82,12 @@ export const QUERY_KEYS = {
   SEARCH_POSTS: "getSearchPosts",
 };
 
+export const tableNames = {
+  users: "users",
+  posts: "posts",
+  saves: "saves",
+};
+
 /////////////DUMMY////////////////////////////////////
 export const dummyPosts = [
   {

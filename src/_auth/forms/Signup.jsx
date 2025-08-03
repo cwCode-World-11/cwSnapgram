@@ -1,10 +1,10 @@
-import * as z from "zod";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import cLogo from "/assets/cLogo-removebg.png";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Loader from "../../components/Loader";
 import toast from "react-hot-toast";
 import {
@@ -16,10 +16,11 @@ import {
   FormMessage,
 } from "../../components/ui/form";
 import { SignupValidation as formSchema } from "../../lib/validation";
+import { signUp } from "../../supabase/auth";
+import { useSaveUserToDB } from "../../lib/tanstackQuery/queries";
 
 const Signup = () => {
-  const isLoading = true;
-
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -29,9 +30,47 @@ const Signup = () => {
       password: "",
     },
   });
+  const {
+    mutateAsync: saveUserToDB,
+    isSaveToDBLoading,
+    error,
+  } = useSaveUserToDB();
 
-  function onSignUp() {
-    toast.success("Account was created successfully");
+  const navigate = useNavigate();
+
+  async function onSignUp(user) {
+    setIsLoading(true);
+    try {
+      // NOTE: creating account in supabase.
+      const newUser = await signUp(user.email, user.password);
+      if (newUser.success === false) {
+        toast.error(newUser.msg);
+        return;
+      }
+      toast.success("Account was created successfully");
+
+      // NOTE: creating table in supabase
+      const u = {
+        accountId: newUser.data.user.id,
+        email: newUser.data.user.email,
+        name: user.name,
+        username: user.username,
+        imageUrl: `https://ui-avatars.com/api/?name=${user.name}&size=256&bold=true`,
+      };
+      await saveUserToDB(u);
+      toast("Saving user data database...");
+      if (error) {
+        toast.error("Failed to insert data in database");
+        return;
+      }
+      form.reset();
+      navigate("/");
+    } catch (error) {
+      console.error("error:", error);
+      toast.error("Error while signing or creating database");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -128,7 +167,7 @@ const Signup = () => {
           className="shad-button_primary w-[50%]"
           variant="primary"
         >
-          {isLoading ? (
+          {isLoading || isSaveToDBLoading ? (
             <div className="flex-center gap-2">
               <Loader /> Loading...
             </div>

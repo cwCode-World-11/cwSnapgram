@@ -2,16 +2,25 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router";
 import Loader from "./Loader";
 import { Button } from "./ui/button";
 import { sidebarLinks } from "../lib/constants";
+import { logOut } from "../supabase/auth";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 const LeftSidebar = () => {
   let user;
-
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const handleSignOut = async (e) => {
     e.preventDefault();
-    navigate("/login");
+    try {
+      await logOut();
+      navigate("/login");
+      toast.success("You were logged out");
+    } catch (error) {
+      console.log("error:", error);
+      toast.error("Failed to logging out!!!");
+    }
   };
 
   return (

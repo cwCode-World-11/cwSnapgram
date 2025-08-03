@@ -1,10 +1,10 @@
-import * as z from "zod";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import cLogo from "/assets/cLogo-removebg.png";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Loader from "../../components/Loader";
 import { toast } from "react-hot-toast";
 import {
@@ -16,9 +16,11 @@ import {
   FormMessage,
 } from "../../components/ui/form";
 import { SigninValidation as formSchema } from "../../lib/validation";
+import { login } from "../../supabase/auth";
 
 const Login = () => {
-  const isLoading = false;
+  const [isLoading, setIsLoading] = useState();
+  const navigate = useNavigate();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -28,8 +30,23 @@ const Login = () => {
     },
   });
 
-  function onLogin() {
-    toast.success("Log in successful");
+  async function onLogin(user) {
+    setIsLoading(true);
+    try {
+      const u = await login(user.email, user.password);
+      if (u.success === false) {
+        toast.error(u.msg);
+        return;
+      }
+      form.reset();
+      navigate("/");
+      toast.success("Log in successful");
+    } catch (error) {
+      console.error("error:", error);
+      toast.error("Error while signing or creating database");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -103,7 +120,7 @@ const Login = () => {
             to="/sign-up"
             className="text-primary-500 text-small-semibold ml-1 "
           >
-            Sign-Up
+            Sign Up
           </Link>
         </p>
       </form>

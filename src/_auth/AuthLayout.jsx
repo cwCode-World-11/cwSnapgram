@@ -1,9 +1,11 @@
 import { Outlet } from "react-router";
 import { Navigate } from "react-router";
 import photo from "/assets/authDisplay.jpg";
+import { useAuth } from "../context/AuthContext";
 
 const AuthLayout = () => {
-  const isAuthenticated = true;
+  const { currentUser } = useAuth();
+  const isAuthenticated = currentUser && true;
 
   return (
     <>
