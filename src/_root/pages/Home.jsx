@@ -1,12 +1,21 @@
+import { useEffect, useState } from "react";
 import Loader from "../../components/Loader";
 import PostCard from "../../components/PostCard";
 import UserCard from "../../components/UserCard";
 import { dummyPosts as posts } from "../../lib/constants";
 import { dummyUsers as creators } from "../../lib/constants";
+import { useGetPosts, useGetUsers } from "../../lib/tanstackQuery/queries";
+import { useAuth } from "../../context/AuthContext";
 
 const Home = () => {
-  let isPostLoading = false,
-    isUserLoading = false;
+  const { user } = useAuth();
+  const { data, isPending: isPostLoading } = useGetPosts();
+  // const { data: d, isPending: isUserLoading } = useGetUsers(user.accountId);
+  const d = useGetUsers(user?.accountId);
+
+  if (!d.isPending) {
+    console.log("posts:", d.data.data);
+  }
 
   return (
     <div className="flex flex-1">
@@ -17,11 +26,18 @@ const Home = () => {
             <Loader />
           ) : (
             <ul className="flex flex-col flex-1 gap-9 w-full ">
-              {posts?.map((post) => (
-                <li key={post?.$id} className="flex justify-center w-full">
-                  <PostCard post={post} />
-                </li>
-              ))}
+              {data?.pages[0]?.data?.length > 0 ? (
+                data?.pages[0]?.data?.map((post) => (
+                  <li
+                    key={post?.imageId}
+                    className="flex justify-center w-full"
+                  >
+                    <PostCard post={post} />
+                  </li>
+                ))
+              ) : (
+                <p>No media here</p>
+              )}
             </ul>
           )}
         </div>
@@ -29,9 +45,8 @@ const Home = () => {
 
       <div className="home-creators hidden custom-scrollbar">
         <h3 className="h3-bold text-light-1">Top Creators</h3>
-        {isUserLoading && !creators ? (
-          <Loader />
-        ) : (
+        {d.isPending && <Loader />}
+        {!d.isPending && d?.data?.data.length > 0 ? (
           <ul className="grid 2xl:grid-cols-2 gap-6">
             {creators?.map((creator) => (
               <li key={creator?.$id}>
@@ -39,6 +54,8 @@ const Home = () => {
               </li>
             ))}
           </ul>
+        ) : (
+          <p>No creators right for now</p>
         )}
       </div>
     </div>

@@ -1,8 +1,27 @@
 import { Link } from "react-router";
 import { Button } from "./ui/button";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
+import { logOut } from "../supabase/auth";
 
 const Topbar = () => {
-  let user;
+  const { user, setUser, setCurrentUser } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async (e) => {
+    e.preventDefault();
+    try {
+      await logOut();
+      setCurrentUser(null);
+      setUser(null);
+      navigate("/login");
+      toast.success("You were logged out");
+    } catch (error) {
+      console.log("error:", error);
+      toast.error("Failed to logging out!!!");
+    }
+  };
 
   return (
     <section className="topbar">
@@ -20,12 +39,14 @@ const Topbar = () => {
           <Button
             variant="ghost"
             className="shad-button_ghost"
-            //TODO: onClick={() => signOut()}
+            onClick={(e) => handleSignOut(e)}
           >
             <img src="/assets/icons/logout.svg" alt="logout" />
           </Button>
-          {/*TODO: <Link to={`/profile/${user?.id}`} className="flex-center gap-3"> */}
-          <Link to={`/profile/123`} className="flex-center gap-3">
+          <Link
+            to={`/profile/${user?.accountId}`}
+            className="flex-center gap-3"
+          >
             <img
               src={user?.imageUrl || "/assets/icons/profile-placeholder.svg"}
               alt="profile"

@@ -44,7 +44,6 @@ function App() {
         {/* PAGE NOT FOUND!!! */}
         <Route path="*" element={<h1>404 Not Found Error</h1>} />
       </Routes>
-      {/* TODO: Add Toaster component */}
       <Toaster position="bottom-center" />
     </main>
   );

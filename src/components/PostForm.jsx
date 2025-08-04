@@ -18,8 +18,16 @@ import FileUploader from "./FileUploader";
 import Loader from "./Loader";
 import { PostValidation } from "../lib/validation";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
+import { useCreatePost, useUpdatePost } from "../lib/tanstackQuery/queries";
+import { useEffect } from "react";
 
 const PostForm = ({ post, action }) => {
+  const { mutateAsync: createPost, isPending: isLoadingCreate } =
+    useCreatePost();
+  const { mutateAsync: updatePost, isPending: isLoadingUpdate } =
+    useUpdatePost();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const form = useForm({
     resolver: zodResolver(PostValidation),
@@ -31,34 +39,44 @@ const PostForm = ({ post, action }) => {
     },
   });
 
+  useEffect(() => {
+    if (action === "Update" && post === undefined) {
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    }
+  }, []);
+
   // Handler
   const handleSubmit = async (value) => {
-    // ACTION = UPDATE
-    // if (post && action === "Update") {
-    //   const updatedPost = await updatePost({
-    //     ...value,
-    //     postId: post.$id,
-    //     imageId: post.imageId,
-    //     imageUrl: post.imageUrl,
-    //   });
-    //   if (!updatedPost) {
-    //     toast({
-    //       title: `${action} post failed. Please try again.`,
-    //     });
-    //   }
-    //   return navigate(`/posts/${post.$id}`);
-    // }
-    // // ACTION = CREATE
-    // const newPost = await createPost({
-    //   ...value,
-    //   userId: user.id,
-    // });
-    // if (!newPost) {
-    //   toast({
-    //     title: `${action} post failed. Please try again.`,
-    //   });
-    // }
-    toast("Something happens");
+    // ACTION = UPDATE////////////////////////
+    if (post && action === "Update") {
+      const updatedPost = await updatePost({
+        ...value,
+        imageId: post.imageId,
+        imageUrl: post.imageUrl,
+        userId: user.accountId,
+      });
+      if (!updatedPost) {
+        toast(`${action} post failed. Please try again.`);
+        return;
+      }
+      return navigate(`/posts/${post.imageId}`);
+    }
+
+    // ACTION = CREATE////////////////////////
+    const newPost = await createPost({
+      userId: user.accountId,
+      post: { ...value },
+    });
+    if (!newPost) {
+      toast(`${action} post failed. Please try again.`);
+      return;
+    }
+    if (newPost.success) {
+      toast.success("Post was created");
+    } else {
+      toast.error("Sorry!, can't post right now");
+      return;
+    }
     navigate("/");
   };
 
@@ -152,13 +170,15 @@ const PostForm = ({ post, action }) => {
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
-            //    TODO: disabled={isLoadingCreate || isLoadingUpdate}
-            //   >
-            //     {(isLoadingCreate || isLoadingUpdate) && <Loader />}
-            //     {action} Post
-            //     disabled={isLoadingCreate || isLoadingUpdate}
+            disabled={isLoadingCreate || isLoadingUpdate}
           >
-            {action} Post
+            {(isLoadingCreate || isLoadingUpdate) && (
+              <>
+                <Loader />
+                <span>Loading...</span>
+              </>
+            )}
+            {isLoadingCreate || isLoadingUpdate || action + " Post"}
           </Button>
         </div>
       </form>

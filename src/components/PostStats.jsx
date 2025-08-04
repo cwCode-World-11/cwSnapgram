@@ -5,7 +5,8 @@ import { checkIsLiked } from "@/lib/utils";
 const PostStats = ({ post, userId }) => {
   const location = useLocation();
   //   const likes = ["123", "321", "1111", "222", "333"];
-  const likesList = post.likes.map((user) => user.$id);
+  // const likesList = post?.likes?.map((user) => user.$id);
+  const likesList = [];
 
   const [likes, setLikes] = useState(likesList);
   const isSaved = true;

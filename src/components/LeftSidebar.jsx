@@ -1,20 +1,30 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router";
-import Loader from "./Loader";
 import { Button } from "./ui/button";
 import { sidebarLinks } from "../lib/constants";
 import { logOut } from "../supabase/auth";
 import { useAuth } from "../context/AuthContext";
+import Loader from "../components/Loader";
 import toast from "react-hot-toast";
 
 const LeftSidebar = () => {
-  let user;
+  const { user, setUser, setCurrentUser, currentUser } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+
+  if (!user) {
+    return (
+      <div className="lg:flex items-center justify-center w-screen h-screen">
+        <Loader size={64} />
+      </div>
+    );
+  }
 
   const handleSignOut = async (e) => {
     e.preventDefault();
     try {
       await logOut();
+      setCurrentUser(null);
+      setUser(null);
       navigate("/login");
       toast.success("You were logged out");
     } catch (error) {
@@ -34,8 +44,10 @@ const LeftSidebar = () => {
             height={36}
           />
         </Link>
-        {/*TODO: <Link to={`/profile/${user.id}`} className="flex gap-3 items-center"> */}
-        <Link to={`/profile/123`} className="flex gap-3 items-center">
+        <Link
+          to={`/profile/${user.accountId}`}
+          className="flex gap-3 items-center"
+        >
           <img
             src={user?.imageUrl || "/assets/profile1.jpg"}
             alt="profile"

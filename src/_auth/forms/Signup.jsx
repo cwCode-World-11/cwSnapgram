@@ -50,12 +50,14 @@ const Signup = () => {
       toast.success("Account was created successfully");
 
       // NOTE: creating table in supabase
+      const len =
+        user?.name.split(" ").lenth > 1 ? user?.name.split(" ").lenth : 1;
       const u = {
         accountId: newUser.data.user.id,
         email: newUser.data.user.email,
         name: user.name,
         username: user.username,
-        imageUrl: `https://ui-avatars.com/api/?name=${user.name}&size=256&bold=true`,
+        imageUrl: `https://ui-avatars.com/api/?name=${user?.name}&size=256&bold=true&length=${len}`,
       };
       await saveUserToDB(u);
       toast("Saving user data database...");

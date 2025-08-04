@@ -1,13 +1,11 @@
 import { useParams } from "react-router";
-
 import Loader from "../../components/Loader";
 import PostForm from "../../components/PostForm";
-import { dummyPosts as posts } from "../../lib/constants";
+import { useGetPostById } from "../../lib/tanstackQuery/queries";
 
 const EditPost = () => {
   const { id } = useParams();
-  const post = posts[0];
-  const isLoading = false;
+  const { data: post, isPending: isLoading } = useGetPostById(id);
 
   if (isLoading)
     return (
@@ -30,7 +28,7 @@ const EditPost = () => {
           <h2 className="h3-bold md:h2-bold text-left w-full">Edit Post</h2>
         </div>
 
-        {isLoading ? <Loader /> : <PostForm action="Update" post={post} />}
+        {isLoading ? <Loader /> : <PostForm action="Update" post={post[0]} />}
       </div>
     </div>
   );

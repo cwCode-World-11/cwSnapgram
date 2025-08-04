@@ -1,9 +1,10 @@
 import { Link } from "react-router";
 import { multiFormatDateString } from "../lib/utils";
 import PostStats from "./PostStats";
+import { useAuth } from "../context/AuthContext";
 
 const PostCard = ({ post }) => {
-  let user = { id: "123" };
+  const { user } = useAuth();
 
   if (!post.creator) return;
 
@@ -11,14 +12,13 @@ const PostCard = ({ post }) => {
     <div className="post-card">
       <div className="flex-between">
         <div className="flex items-center gap-3">
-          <Link to={`/profile/${post.creator.$id}`}>
+          <Link to={`/profile/${post.creator.accountId}`}>
             <img
               src={
                 post.creator?.imageUrl ||
                 "/assets/icons/profile-placeholder.svg"
               }
               alt="creator"
-              // className="w-12 object-cover lg:h-12 rounded-full"
               className="w-12 object-cover h-12 rounded-full"
             />
           </Link>
@@ -29,7 +29,8 @@ const PostCard = ({ post }) => {
             </p>
             <div className="flex-center gap-2 text-light-3">
               <p className="subtle-semibold lg:small-regular ">
-                {multiFormatDateString(post.$createdAt)}
+                {/* TODO: update time - it always showing "Just now" */}
+                {multiFormatDateString(post.updatedAt)}
               </p>
               •
               <p className="subtle-semibold lg:small-regular">
@@ -40,8 +41,8 @@ const PostCard = ({ post }) => {
         </div>
 
         <Link
-          to={`/update-post/${post.$id}`}
-          className={`${user.id !== post.creator.$id && "hidden"}`}
+          to={`/update-post/${post.imageId}`}
+          className={`${user.accountId !== post.creator.accountId && "hidden"}`}
         >
           <img
             src={"/assets/icons/edit.svg"}
@@ -51,8 +52,8 @@ const PostCard = ({ post }) => {
           />
         </Link>
       </div>
-      <Link to={`/posts/${post.$id}`}>
-        <div className="small-medium lg:base-medium py-5">
+      <Link to={`/posts/${post.imageId}`}>
+        <div className="small-medium text-ellipsis break-all lg:base-medium py-5">
           <p>{post.caption}</p>
           <ul className="flex gap-1 mt-2">
             {post.tags.map((tag, index) => (
@@ -69,7 +70,7 @@ const PostCard = ({ post }) => {
           className="post-card_img"
         />
       </Link>
-      <PostStats post={post} userId={user.id} />
+      <PostStats post={post} userId={user.accountId} />
     </div>
   );
 };

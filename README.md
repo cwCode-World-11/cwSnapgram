@@ -73,7 +73,7 @@ Explore social media with this user-friendly platform that has a nice look and l
 
 👉 **React Query Integration**: Incorporate the React Query (Tanstack Query) data fetching library for, Auto caching to enhance performance, Parallel queries for efficient data retrieval, First-class Mutations, etc
 
-👉 **Backend as a Service (BaaS) - Supabase**: Utilize Appwrite as a Backend as a Service solution for streamlined backend development, offering features like authentication, database, file storage, and more
+👉 **Backend as a Service (BaaS) - Supabase**: Utilize _Supabase_ as a Backend as a Service solution for streamlined backend development, offering features like authentication, database, file storage, and more
 
 and many more, including code architecture and reusability
 
@@ -120,7 +120,7 @@ VITE_APPWRITE_SAVES_COLLECTION_ID=
 
 ## NOTE: i am using supabase
 
-Replace the placeholder values with your actual Appwrite credentials. You can obtain these credentials by signing up on the [Appwrite website](https://appwrite.io/).
+Replace the placeholder values with your actual Supabase credentials. You can obtain these credentials by signing up on the [supabase website](https://supabase.com/).
 
 **Running the Project**
 
