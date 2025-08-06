@@ -55,6 +55,7 @@ async function createPost(userId, post) {
     // NOTE:upload file to storage.
     const { imageId, uploadedFileUrl } = await uploadFile(userId, post.file[0]);
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
+    const date = Date.now();
     const insertObj = {
       caption: post?.caption,
       location: post?.location,
@@ -62,11 +63,10 @@ async function createPost(userId, post) {
       imageId,
       imageUrl: uploadedFileUrl,
       creator: userId,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt: date,
+      updatedAt: date,
     };
 
-    console.log("insertObj:", insertObj);
     // NOTE:post file to database.
     const { error } = await supabase.from(tableNames.posts).insert(insertObj);
     if (error?.message) {
@@ -85,7 +85,6 @@ async function uploadFile(userId, file, updatePostId = undefined) {
       file[0]?.name?.split(".").pop() || file?.name?.split(".").pop() || "png";
     const uniqueId = uuidV4();
     const filePath = `${userId}/${uniqueId}.${fileExt}`;
-    console.log("filePath:", filePath);
     const f = updatePostId ? file[0] : file;
     if (!userId || !f) {
       console.error("user id or file can't get properly");
@@ -121,14 +120,16 @@ async function uploadFile(userId, file, updatePostId = undefined) {
     return { success: false, msg: error.message };
   }
 }
-
 async function getInfinitePosts() {
   try {
+    // .select("*, creator:posts_creator_fkey(*)");
     const { data, error } = await supabase
       .from(tableNames.posts)
-      .select("*, creator:posts_creator_fkey(*)")
-      .limit(9)
-      .order("updatedAt", { ascending: false });
+      .select("*,creator:users(*)")
+      .order("updatedAt", { ascending: false })
+      .limit(9);
+
+    console.log("data:", data);
     if (error) {
       console.error("error:", error);
       throw Error;
@@ -140,7 +141,6 @@ async function getInfinitePosts() {
     return { success: false, msg: error.message };
   }
 }
-
 async function getUsers(userId) {
   if (!userId) {
     console.error(
@@ -152,7 +152,7 @@ async function getUsers(userId) {
   try {
     const { data, error } = await supabase
       .from(tableNames.users)
-      .select("imageUrl,name,username")
+      .select("imageUrl,name,username,accountId")
       .limit(10)
       .neq("accountId", userId);
     if (error) {
@@ -166,7 +166,6 @@ async function getUsers(userId) {
     return { success: false, msg: error.message };
   }
 }
-
 async function getPostById(postId) {
   if (!postId) {
     console.error("You can’t fetch post unless you provide your post ID");
@@ -175,7 +174,7 @@ async function getPostById(postId) {
   try {
     const { data, error } = await supabase
       .from(tableNames.posts)
-      .select("*")
+      .select("*,creator:users(*)")
       .eq("imageId", postId);
     if (error) {
       console.error("error:", error);
@@ -194,11 +193,13 @@ async function updatePost(post) {
     return;
   }
   const hasFileToUpdate = post.file.length > 0;
+  const date = Date.now();
   const updateObj = {
     imageId: post.imageId,
     caption: post.caption,
     location: post.location,
     tags: post.tags?.replace(/ /g, "").split(",") || [],
+    updatedAt: date,
   };
   try {
     if (hasFileToUpdate) {
@@ -253,6 +254,30 @@ async function deleteFile(oldFile) {
   }
 }
 
+// NOTE: get other posts from same(own) user
+async function getUserPosts(userId) {
+  if (!userId) return;
+  try {
+    const { data, error } = await supabase
+      .from(tableNames.posts)
+      .select("*,creator:users(*)")
+      // .order("updatedAt", { ascending: false })
+      .eq("creator", userId);
+
+    console.log("data:", data);
+
+    if (error) {
+      console.error("error:", error);
+      throw Error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("error:", error.message);
+    return { success: false, msg: error.message };
+  }
+}
+
 export {
   saveUserToDB,
   getCurrentUser,
@@ -261,4 +286,123 @@ export {
   getUsers,
   getPostById,
   updatePost,
+  getUserPosts,
 };
+
+// [
+//     {
+//         "tags": [
+//             "Post",
+//             "AI",
+//             "Art"
+//         ],
+//         "imageId": "4f6a84d1-6421-407a-a77c-45b7d0eda75e",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/35e4b5ad-3333-4209-b0f3-697ee0ed6ce1/4f6a84d1-6421-407a-a77c-45b7d0eda75e.png",
+//         "location": "USA",
+//         "caption": "Tom cruise",
+//         "likes": null,
+//         "creator": {
+//             "bio": null,
+//             "name": "aaa",
+//             "email": "aaa@gmail.com",
+//             "liked": null,
+//             "posts": null,
+//             "imageId": null,
+//             "imageUrl": "https://ui-avatars.com/api/?name=aaa&size=256&bold=true&length=1",
+//             "username": "aaa123",
+//             "accountId": "35e4b5ad-3333-4209-b0f3-697ee0ed6ce1"
+//         },
+//         "createdAt": "2025-08-06T07:45:07.793Z",
+//         "updatedAt": "2025-08-06T08:15:44.854Z"
+//     },
+//     {
+//         "tags": [
+//             "Logo",
+//             "blue",
+//             "tube"
+//         ],
+//         "imageId": "b92761bd-425f-46da-88ff-cdd76c5c57db",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/c9201c7f-b6d3-4135-aeb5-dc5c18497182/b92761bd-425f-46da-88ff-cdd76c5c57db.png",
+//         "location": "NYC",
+//         "caption": "Meta logo ",
+//         "likes": null,
+//         "creator": null,
+//         "createdAt": "2025-08-06T08:13:30.515Z",
+//         "updatedAt": "2025-08-06T08:13:30.515Z"
+//     },
+//     {
+//         "tags": [
+//             "Sun",
+//             "nature",
+//             "gift"
+//         ],
+//         "imageId": "c944030b-82ca-4369-9082-f45ca5420b30",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/35e4b5ad-3333-4209-b0f3-697ee0ed6ce1/c944030b-82ca-4369-9082-f45ca5420b30.jpg",
+//         "location": "World",
+//         "caption": "Feel the beauty of nature🎴",
+//         "likes": null,
+//         "creator": {
+//             "bio": null,
+//             "name": "aaa",
+//             "email": "aaa@gmail.com",
+//             "liked": null,
+//             "posts": null,
+//             "imageId": null,
+//             "imageUrl": "https://ui-avatars.com/api/?name=aaa&size=256&bold=true&length=1",
+//             "username": "aaa123",
+//             "accountId": "35e4b5ad-3333-4209-b0f3-697ee0ed6ce1"
+//         },
+//         "createdAt": "1754465489139",
+//         "updatedAt": "1754465489139"
+//     },
+//     {
+//         "tags": [
+//             "Action",
+//             "ancient",
+//             "modern"
+//         ],
+//         "imageId": "c4b90a5d-4105-4b74-aa89-14bfbca4ff83",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/35e4b5ad-3333-4209-b0f3-697ee0ed6ce1/c4b90a5d-4105-4b74-aa89-14bfbca4ff83.jpg",
+//         "location": "USA",
+//         "caption": "Charlize Theron",
+//         "likes": null,
+//         "creator": {
+//             "bio": null,
+//             "name": "aaa",
+//             "email": "aaa@gmail.com",
+//             "liked": null,
+//             "posts": null,
+//             "imageId": null,
+//             "imageUrl": "https://ui-avatars.com/api/?name=aaa&size=256&bold=true&length=1",
+//             "username": "aaa123",
+//             "accountId": "35e4b5ad-3333-4209-b0f3-697ee0ed6ce1"
+//         },
+//         "createdAt": "1754465111310",
+//         "updatedAt": "1754465111310"
+//     },
+//     {
+//         "tags": [
+//             "Movie",
+//             "photo",
+//             "star"
+//         ],
+//         "imageId": "52c3e5c2-f2e0-45dd-a021-00b92560247b",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/35e4b5ad-3333-4209-b0f3-697ee0ed6ce1/52c3e5c2-f2e0-45dd-a021-00b92560247b.jpg",
+//         "location": "USA",
+//         "caption": "Milla Jovovich",
+//         "likes": null,
+//         "creator": {
+//             "bio": null,
+//             "name": "aaa",
+//             "email": "aaa@gmail.com",
+//             "liked": null,
+//             "posts": null,
+//             "imageId": null,
+//             "imageUrl": "https://ui-avatars.com/api/?name=aaa&size=256&bold=true&length=1",
+//             "username": "aaa123",
+//             "accountId": "35e4b5ad-3333-4209-b0f3-697ee0ed6ce1"
+//         },
+//         "createdAt": "1754465039061",
+//         "updatedAt": "1754465039061"
+//     }
+// ]

@@ -6,9 +6,9 @@ const GridPostList = ({ posts, showUser = true, showStats = true }) => {
   return (
     <ul className="grid-container custom-scrollbar">
       {posts.map((post) => (
-        <li key={post.$id} className="relative min-w-80 h-80">
+        <li key={post.imageId} className="relative min-w-80 h-80">
           <Link
-            to={`/posts/${post.$id}`}
+            to={`/posts/${post.imageId}`}
             className="grid-post_link border-[#5b5b5b]"
           >
             <img

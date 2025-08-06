@@ -1,6 +1,6 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -38,12 +38,6 @@ const PostForm = ({ post, action }) => {
       tags: post ? post.tags.join(",") : "",
     },
   });
-
-  useEffect(() => {
-    if (action === "Update" && post === undefined) {
-      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    }
-  }, []);
 
   // Handler
   const handleSubmit = async (value) => {

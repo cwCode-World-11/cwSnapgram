@@ -12,6 +12,7 @@ import {
   getUsers,
   getPostById,
   updatePost,
+  getUserPosts,
 } from "../../supabase/database";
 import { QUERY_KEYS } from "../constants";
 
@@ -78,7 +79,15 @@ export const useGetUsers = (userId) => {
 
 export const useGetPostById = (postId) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_POST_BY_ID],
+    queryKey: [QUERY_KEYS.GET_POST_BY_ID, QUERY_KEYS.GET_CURRENT_USER],
     queryFn: () => getPostById(postId),
+  });
+};
+
+export const useGetUserPosts = (userId) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
+    queryFn: () => getUserPosts(userId),
+    enabled: !!userId,
   });
 };

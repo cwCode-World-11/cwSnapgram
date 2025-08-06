@@ -4,8 +4,7 @@ import { Button } from "./ui/button";
 
 const UserCard = ({ user }) => {
   return (
-    //TODO: <Link to={`/profile/${user.$id}`} className="user-card">
-    <Link to={`/profile/123`} className="user-card border-[#2b2b2b]">
+    <Link to={`/profile/${user.$id}`} className="user-card border-[#2b2b2b]">
       <img
         src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
         alt="creator"

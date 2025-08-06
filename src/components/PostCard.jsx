@@ -1,12 +1,15 @@
 import { Link } from "react-router";
-import { multiFormatDateString } from "../lib/utils";
+import { formatInstagramTime } from "../lib/utils";
 import PostStats from "./PostStats";
 import { useAuth } from "../context/AuthContext";
 
 const PostCard = ({ post }) => {
   const { user } = useAuth();
 
-  if (!post.creator) return;
+  if (!post.creator) {
+    console.log("post.creator:", post);
+    return;
+  }
 
   return (
     <div className="post-card">
@@ -30,7 +33,7 @@ const PostCard = ({ post }) => {
             <div className="flex-center gap-2 text-light-3">
               <p className="subtle-semibold lg:small-regular ">
                 {/* TODO: update time - it always showing "Just now" */}
-                {multiFormatDateString(post.updatedAt)}
+                {formatInstagramTime(post.updatedAt)}
               </p>
               •
               <p className="subtle-semibold lg:small-regular">

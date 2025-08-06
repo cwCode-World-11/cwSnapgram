@@ -3,23 +3,46 @@ import { multiFormatDateString } from "../../lib/utils";
 import { Button } from "../../components/ui/button";
 import Loader from "../../components/Loader";
 import GridPostList from "../../components/GridPostList";
-import { dummyPosts as posts } from "../../lib/constants";
-import { dummyUsers as creators } from "../../lib/constants";
 import PostStats from "../../components/PostStats";
+import {
+  useGetPostById,
+  useGetUserPosts,
+} from "../../lib/tanstackQuery/queries";
+import { useAuth } from "../../context/AuthContext";
 
 const PostDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const user = creators[0];
-  const post = posts[0];
-  const isLoading = false;
-  const isUserPostLoading = false;
-  const relatedPosts = posts.filter((p) => p.$id !== post.$id); //NOTE: except this post details
+  const { user } = useAuth();
+  const { data: postArr, isPending: isLoading } = useGetPostById(id);
+  let post;
+  const { data: userPosts, isPending: isUserPostLoading } = useGetUserPosts(
+    user?.accountId
+  );
+  const relatedPosts = userPosts?.filter(
+    (p) => p?.imageId !== postArr[0]?.imageId
+  ); //NOTE: except this post details
 
   const handleDeletePost = () => {
     //TODO: deletePost({ postId: id, imageId: post?.imageId });
     navigate(-1);
   };
+
+  // if (!user || isLoading || isUserPostLoading) {
+  //   return (
+  //     <div className="w-screen h-screen flex items-center justify-center">
+  //       <Loader />
+  //     </div>
+  //   );
+  // }
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // TODO: Slow post details changing , for more post only need own user posts not others posts
+
+  if (postArr) {
+    post = postArr[0];
+    console.log("post:", post);
+  }
 
   return (
     <div className="post_details-container custom-scrollbar">
@@ -52,12 +75,12 @@ const PostDetails = () => {
           <div className="post_details-info">
             <div className="flex-between w-full">
               <Link
-                to={`/profile/${post?.creator.$id}`}
+                to={`/profile/${post?.creator.accountId}`}
                 className="flex items-center gap-3"
               >
                 <img
                   src={
-                    post?.creator.imageUrl ||
+                    post?.creator?.imageUrl ||
                     "/assets/icons/profile-placeholder.svg"
                   }
                   alt="creator"
@@ -69,7 +92,7 @@ const PostDetails = () => {
                   </p>
                   <div className="flex-center gap-2 text-light-3">
                     <p className="subtle-semibold lg:small-regular ">
-                      {multiFormatDateString(post?.$createdAt)}
+                      {multiFormatDateString(post?.createdAt)}
                     </p>
                     •
                     <p className="subtle-semibold lg:small-regular">
@@ -81,8 +104,10 @@ const PostDetails = () => {
 
               <div className="flex-center gap-4">
                 <Link
-                  to={`/update-post/${post?.$id}`}
-                  className={`${user.id !== post?.creator.$id && "hidden"}`}
+                  to={`/update-post/${post?.imageId}`}
+                  className={`${
+                    user?.accountId !== post?.creator.accountId && "hidden"
+                  }`}
                 >
                   <img
                     src={"/assets/icons/edit.svg"}
@@ -96,7 +121,7 @@ const PostDetails = () => {
                   onClick={handleDeletePost}
                   variant="ghost"
                   className={`ost_details-delete_btn ${
-                    user.id !== post?.creator.$id && "hidden"
+                    user?.accountId !== post?.creator?.accountId && "hidden"
                   }`}
                 >
                   <img
@@ -126,7 +151,7 @@ const PostDetails = () => {
             </div>
 
             <div className="w-full">
-              <PostStats post={post} userId={user.id} />
+              <PostStats post={post} userId={user?.accountId} />
             </div>
           </div>
         </div>

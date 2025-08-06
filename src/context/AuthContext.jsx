@@ -11,7 +11,7 @@ const useAuth = () => useContext(AuthContext);
 const AuthProvider = ({ children }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null); // Stores session user
-  const [user, setUser] = useState(null); // Stores additional user data
+  const [user, setUser] = useState(); // Stores additional user data
 
   const navigate = useNavigate();
 
@@ -46,7 +46,6 @@ const AuthProvider = ({ children }) => {
         try {
           const userData = await getCurrentUser(); // Fetch user data from the database
           setUser(userData.data); // Store the user data
-          setIsAuthLoading(false); // Stop loading once check is done
         } catch (err) {
           console.log("Error fetching user data:", err);
         }
@@ -58,6 +57,7 @@ const AuthProvider = ({ children }) => {
     };
 
     checkUserSession(); // Run check when the component mounts
+    setIsAuthLoading(false); // Stop loading once check is done
   }, []);
 
   const data = {
@@ -69,7 +69,7 @@ const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={data}>
-      {isAuthLoading ? (
+      {isAuthLoading || !user ? (
         <div className="flex items-center justify-center w-screen h-screen">
           <Loader size={64} />
         </div>

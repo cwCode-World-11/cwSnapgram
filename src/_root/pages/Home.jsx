@@ -1,21 +1,14 @@
-import { useEffect, useState } from "react";
 import Loader from "../../components/Loader";
 import PostCard from "../../components/PostCard";
 import UserCard from "../../components/UserCard";
-import { dummyPosts as posts } from "../../lib/constants";
-import { dummyUsers as creators } from "../../lib/constants";
 import { useGetPosts, useGetUsers } from "../../lib/tanstackQuery/queries";
 import { useAuth } from "../../context/AuthContext";
 
 const Home = () => {
   const { user } = useAuth();
   const { data, isPending: isPostLoading } = useGetPosts();
-  // const { data: d, isPending: isUserLoading } = useGetUsers(user.accountId);
   const d = useGetUsers(user?.accountId);
-
-  if (!d.isPending) {
-    console.log("posts:", d.data.data);
-  }
+  const posts = data?.pages[0]?.data;
 
   return (
     <div className="flex flex-1">
@@ -26,8 +19,8 @@ const Home = () => {
             <Loader />
           ) : (
             <ul className="flex flex-col flex-1 gap-9 w-full ">
-              {data?.pages[0]?.data?.length > 0 ? (
-                data?.pages[0]?.data?.map((post) => (
+              {posts?.length > 0 ? (
+                posts?.map((post) => (
                   <li
                     key={post?.imageId}
                     className="flex justify-center w-full"
@@ -48,8 +41,8 @@ const Home = () => {
         {d.isPending && <Loader />}
         {!d.isPending && d?.data?.data.length > 0 ? (
           <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators?.map((creator) => (
-              <li key={creator?.$id}>
+            {d.data.data?.map((creator) => (
+              <li key={creator?.accountId}>
                 <UserCard user={creator} />
               </li>
             ))}
