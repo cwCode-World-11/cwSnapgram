@@ -261,10 +261,11 @@ async function getUserPosts(userId) {
     const { data, error } = await supabase
       .from(tableNames.posts)
       .select("*,creator:users(*)")
-      // .order("updatedAt", { ascending: false })
+      .order("updatedAt", { ascending: false })
       .eq("creator", userId);
 
-    console.log("data:", data);
+    console.log("data:", data); /////////////////////////
+    //TODO: i need same user post not other posts too
 
     if (error) {
       console.error("error:", error);

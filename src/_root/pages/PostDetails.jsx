@@ -9,19 +9,24 @@ import {
   useGetUserPosts,
 } from "../../lib/tanstackQuery/queries";
 import { useAuth } from "../../context/AuthContext";
+import { useEffect, useMemo } from "react";
 
 const PostDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useAuth();
   const { data: postArr, isPending: isLoading } = useGetPostById(id);
-  let post;
   const { data: userPosts, isPending: isUserPostLoading } = useGetUserPosts(
     user?.accountId
   );
-  const relatedPosts = userPosts?.filter(
-    (p) => p?.imageId !== postArr[0]?.imageId
-  ); //NOTE: except this post details
+  const relatedPosts = useMemo(() => {
+    if (!userPosts || !postArr?.[0]) return [];
+    return userPosts.filter((p) => p?.imageId !== postArr[0]?.imageId);
+  }, [userPosts, postArr]);
+
+  // let relatedPosts = userPosts?.filter(
+  //   (p) => p?.imageId !== postArr[0]?.imageId
+  // ); //NOTE: except this postArr?.[0] details
 
   const handleDeletePost = () => {
     //TODO: deletePost({ postId: id, imageId: post?.imageId });
@@ -36,13 +41,12 @@ const PostDetails = () => {
   //   );
   // }
 
-  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // TODO: Slow post details changing , for more post only need own user posts not others posts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
-  if (postArr) {
-    post = postArr[0];
-    console.log("post:", post);
-  }
+  // TODO: Slow post details changing , for more post only need own user posts not others posts
+  // console.log("post:", postArr?.[0]);
 
   return (
     <div className="post_details-container custom-scrollbar">
@@ -62,12 +66,12 @@ const PostDetails = () => {
         </Button>
       </div>
 
-      {isLoading || !post ? (
+      {isLoading || !postArr?.[0] ? (
         <Loader />
       ) : (
         <div className="post_details-card border-[#232323]">
           <img
-            src={post?.imageUrl}
+            src={postArr?.[0]?.imageUrl}
             alt="creator"
             className="post_details-img"
           />
@@ -75,12 +79,12 @@ const PostDetails = () => {
           <div className="post_details-info">
             <div className="flex-between w-full">
               <Link
-                to={`/profile/${post?.creator.accountId}`}
+                to={`/profile/${postArr?.[0]?.creator.accountId}`}
                 className="flex items-center gap-3"
               >
                 <img
                   src={
-                    post?.creator?.imageUrl ||
+                    postArr?.[0]?.creator?.imageUrl ||
                     "/assets/icons/profile-placeholder.svg"
                   }
                   alt="creator"
@@ -88,15 +92,15 @@ const PostDetails = () => {
                 />
                 <div className="flex gap-1 flex-col">
                   <p className="base-medium lg:body-bold text-light-1">
-                    {post?.creator.name}
+                    {postArr?.[0]?.creator.name}
                   </p>
                   <div className="flex-center gap-2 text-light-3">
                     <p className="subtle-semibold lg:small-regular ">
-                      {multiFormatDateString(post?.createdAt)}
+                      {multiFormatDateString(postArr?.[0]?.createdAt)}
                     </p>
                     •
                     <p className="subtle-semibold lg:small-regular">
-                      {post?.location}
+                      {postArr?.[0]?.location}
                     </p>
                   </div>
                 </div>
@@ -104,9 +108,10 @@ const PostDetails = () => {
 
               <div className="flex-center gap-4">
                 <Link
-                  to={`/update-post/${post?.imageId}`}
+                  to={`/update-post/${postArr?.[0]?.imageId}`}
                   className={`${
-                    user?.accountId !== post?.creator.accountId && "hidden"
+                    user?.accountId !== postArr?.[0]?.creator.accountId &&
+                    "hidden"
                   }`}
                 >
                   <img
@@ -121,7 +126,8 @@ const PostDetails = () => {
                   onClick={handleDeletePost}
                   variant="ghost"
                   className={`ost_details-delete_btn ${
-                    user?.accountId !== post?.creator?.accountId && "hidden"
+                    user?.accountId !== postArr?.[0]?.creator?.accountId &&
+                    "hidden"
                   }`}
                 >
                   <img
@@ -137,9 +143,9 @@ const PostDetails = () => {
             <hr className="border w-full border-[#1c1c1c]" />
 
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
-              <p>{post?.caption}</p>
+              <p>{postArr?.[0]?.caption}</p>
               <ul className="flex gap-1 mt-2">
-                {post?.tags.map((tag, index) => (
+                {postArr?.[0]?.tags.map((tag, index) => (
                   <li
                     key={`${tag}${index}`}
                     className="text-light-3 small-regular"
@@ -151,7 +157,7 @@ const PostDetails = () => {
             </div>
 
             <div className="w-full">
-              <PostStats post={post} userId={user?.accountId} />
+              <PostStats post={postArr?.[0]} userId={user?.accountId} />
             </div>
           </div>
         </div>

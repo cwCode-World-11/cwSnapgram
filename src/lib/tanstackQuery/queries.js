@@ -79,8 +79,11 @@ export const useGetUsers = (userId) => {
 
 export const useGetPostById = (postId) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_POST_BY_ID, QUERY_KEYS.GET_CURRENT_USER],
+    queryKey: [QUERY_KEYS.GET_POST_BY_ID, postId],
     queryFn: () => getPostById(postId),
+    enabled: !!postId,
+    refetchOnMount: "always",
+    staleTime: 0, // so it's always considered stale
   });
 };
 
@@ -89,5 +92,7 @@ export const useGetUserPosts = (userId) => {
     queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
     queryFn: () => getUserPosts(userId),
     enabled: !!userId,
+    refetchOnMount: "always",
+    staleTime: 0, // so it's always considered stale
   });
 };
