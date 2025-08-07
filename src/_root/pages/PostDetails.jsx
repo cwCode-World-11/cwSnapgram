@@ -5,11 +5,13 @@ import Loader from "../../components/Loader";
 import GridPostList from "../../components/GridPostList";
 import PostStats from "../../components/PostStats";
 import {
+  useDeletePost,
   useGetPostById,
   useGetUserPosts,
 } from "../../lib/tanstackQuery/queries";
 import { useAuth } from "../../context/AuthContext";
 import { useEffect, useMemo } from "react";
+import toast from "react-hot-toast";
 
 const PostDetails = () => {
   const navigate = useNavigate();
@@ -19,34 +21,29 @@ const PostDetails = () => {
   const { data: userPosts, isPending: isUserPostLoading } = useGetUserPosts(
     user?.accountId
   );
+  const { mutateAsync: deletePost, isPending: isDeletePostLoading } =
+    useDeletePost();
   const relatedPosts = useMemo(() => {
     if (!userPosts || !postArr?.[0]) return [];
     return userPosts.filter((p) => p?.imageId !== postArr[0]?.imageId);
   }, [userPosts, postArr]);
 
-  // let relatedPosts = userPosts?.filter(
-  //   (p) => p?.imageId !== postArr[0]?.imageId
-  // ); //NOTE: except this postArr?.[0] details
-
-  const handleDeletePost = () => {
-    //TODO: deletePost({ postId: id, imageId: post?.imageId });
-    navigate(-1);
+  const handleDeletePost = async () => {
+    try {
+      await deletePost({ imageId: postArr?.[0].imageId });
+      if (isDeletePostLoading) toast("Deleting...");
+    } catch (error) {
+      console.error("error:", error);
+      toast.error("Error while deleting");
+    } finally {
+      toast.success("Post was deleted!!");
+      navigate(-1);
+    }
   };
-
-  // if (!user || isLoading || isUserPostLoading) {
-  //   return (
-  //     <div className="w-screen h-screen flex items-center justify-center">
-  //       <Loader />
-  //     </div>
-  //   );
-  // }
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
-
-  // TODO: Slow post details changing , for more post only need own user posts not others posts
-  // console.log("post:", postArr?.[0]);
 
   return (
     <div className="post_details-container custom-scrollbar">

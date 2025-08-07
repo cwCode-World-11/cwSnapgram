@@ -13,6 +13,7 @@ import {
   getPostById,
   updatePost,
   getUserPosts,
+  deletePost,
 } from "../../supabase/database";
 import { QUERY_KEYS } from "../constants";
 
@@ -42,6 +43,18 @@ export const useUpdatePost = () => {
     onSuccess: (data) => {
       queryCilent.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.data],
+      });
+    },
+  });
+};
+
+export const useDeletePost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ imageId }) => deletePost(imageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
       });
     },
   });

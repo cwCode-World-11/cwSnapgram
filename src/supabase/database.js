@@ -16,7 +16,7 @@ async function saveUserToDB(insertObj) {
       .insert(insertObj);
     if (error) {
       console.error("error:", error);
-      throw Error;
+      throw new Error("Error");
     }
 
     return { success: true, data };
@@ -36,7 +36,7 @@ async function getCurrentUser() {
         .eq("accountId", d.data.session.user.id);
       if (error) {
         console.error("error:", error);
-        throw Error;
+        throw new Error("Error");
       }
       return { success: true, data: dataObj[0] };
     }
@@ -70,7 +70,7 @@ async function createPost(userId, post) {
     // NOTE:post file to database.
     const { error } = await supabase.from(tableNames.posts).insert(insertObj);
     if (error?.message) {
-      throw Error;
+      throw new Error("Error");
     }
     return { success: true };
   } catch (error) {
@@ -85,7 +85,7 @@ async function uploadFile(userId, file, updatePostId = undefined) {
       file[0]?.name?.split(".").pop() || file?.name?.split(".").pop() || "png";
     const uniqueId = uuidV4();
     const filePath = `${userId}/${uniqueId}.${fileExt}`;
-    const f = updatePostId ? file[0] : file;
+    const f = updatePostId ? file?.[0] : file;
     if (!userId || !f) {
       console.error("user id or file can't get properly");
       return;
@@ -129,10 +129,9 @@ async function getInfinitePosts() {
       .order("updatedAt", { ascending: false })
       .limit(9);
 
-    console.log("data:", data);
     if (error) {
       console.error("error:", error);
-      throw Error;
+      throw new Error("Error");
     }
 
     return { success: true, data };
@@ -157,7 +156,7 @@ async function getUsers(userId) {
       .neq("accountId", userId);
     if (error) {
       console.error("error:", error);
-      throw Error;
+      throw new Error("Error");
     }
 
     return { success: true, data };
@@ -178,7 +177,7 @@ async function getPostById(postId) {
       .eq("imageId", postId);
     if (error) {
       console.error("error:", error);
-      throw Error;
+      throw new Error("Error");
     }
     return data;
   } catch (error) {
@@ -222,7 +221,7 @@ async function updatePost(post) {
       .eq("imageId", post?.imageId);
     if (error) {
       console.error("error:", error);
-      throw Error;
+      throw new Error("Error");
     }
     return true;
   } catch (error) {
@@ -245,7 +244,7 @@ async function deleteFile(oldFile) {
       .from("media")
       .remove([`${oldFile.userId}/${oldFile.imageId}.${fileExt}`]);
     if (error) {
-      console.erro("error:", error);
+      console.error("error:", error);
       return;
     }
   } catch (error) {
@@ -264,15 +263,29 @@ async function getUserPosts(userId) {
       .order("updatedAt", { ascending: false })
       .eq("creator", userId);
 
-    console.log("data:", data); /////////////////////////
-    //TODO: i need same user post not other posts too
-
     if (error) {
       console.error("error:", error);
-      throw Error;
+      throw new Error("Error");
     }
 
     return data;
+  } catch (error) {
+    console.error("error:", error.message);
+    return { success: false, msg: error.message };
+  }
+}
+async function deletePost(imageId) {
+  if (!imageId) return;
+  try {
+    const { error } = await supabase
+      .from(tableNames.posts)
+      .delete()
+      .eq("imageId", imageId);
+
+    if (error) {
+      console.error("error:", error);
+      throw new Error("Error");
+    }
   } catch (error) {
     console.error("error:", error.message);
     return { success: false, msg: error.message };
@@ -288,6 +301,7 @@ export {
   getPostById,
   updatePost,
   getUserPosts,
+  deletePost,
 };
 
 // [

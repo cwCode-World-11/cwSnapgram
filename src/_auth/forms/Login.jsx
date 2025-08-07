@@ -17,10 +17,13 @@ import {
 } from "../../components/ui/form";
 import { SigninValidation as formSchema } from "../../lib/validation";
 import { login } from "../../supabase/auth";
+import { getCurrentUser } from "../../supabase/database";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
-  const [isLoading, setIsLoading] = useState();
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -38,6 +41,8 @@ const Login = () => {
         toast.error(u.msg);
         return;
       }
+      const userData = await getCurrentUser(); // Fetch user data from the database
+      setUser(userData.data); // Store the user data
       form.reset();
       navigate("/");
       toast.success("Log in successful");

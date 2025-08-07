@@ -13,10 +13,10 @@ const Topbar = () => {
     e.preventDefault();
     try {
       await logOut();
-      setCurrentUser(null);
-      setUser(null);
       navigate("/login");
       toast.success("You were logged out");
+      setCurrentUser(null);
+      setUser(null);
     } catch (error) {
       console.log("error:", error);
       toast.error("Failed to logging out!!!");

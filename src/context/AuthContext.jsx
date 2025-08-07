@@ -36,6 +36,7 @@ const AuthProvider = ({ children }) => {
   // }, []);
 
   useEffect(() => {
+    setIsAuthLoading(true);
     const checkUserSession = async () => {
       const {
         data: { session },
@@ -48,16 +49,17 @@ const AuthProvider = ({ children }) => {
           setUser(userData.data); // Store the user data
         } catch (err) {
           console.log("Error fetching user data:", err);
+        } finally {
+          setIsAuthLoading(false); // Stop loading once check is done
         }
       } else {
-        setCurrentUser(null); // No session, redirect to login
         navigate("/login");
+        setCurrentUser(null); // No session, redirect to login
         setIsAuthLoading(false); // Stop loading once check is done
       }
     };
 
     checkUserSession(); // Run check when the component mounts
-    setIsAuthLoading(false); // Stop loading once check is done
   }, []);
 
   const data = {
@@ -69,7 +71,7 @@ const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={data}>
-      {isAuthLoading || !user ? (
+      {isAuthLoading ? (
         <div className="flex items-center justify-center w-screen h-screen">
           <Loader size={64} />
         </div>

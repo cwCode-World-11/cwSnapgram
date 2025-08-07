@@ -44,8 +44,10 @@ const PostCard = ({ post }) => {
         </div>
 
         <Link
-          to={`/update-post/${post.imageId}`}
-          className={`${user.accountId !== post.creator.accountId && "hidden"}`}
+          to={`/update-post/${post?.imageId}`}
+          className={`${
+            user?.accountId !== post?.creator?.accountId && "hidden"
+          }`}
         >
           <img
             src={"/assets/icons/edit.svg"}
@@ -73,7 +75,7 @@ const PostCard = ({ post }) => {
           className="post-card_img"
         />
       </Link>
-      <PostStats post={post} userId={user.accountId} />
+      <PostStats post={post} userId={user?.accountId} />
     </div>
   );
 };

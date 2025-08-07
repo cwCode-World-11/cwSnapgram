@@ -10,6 +10,8 @@ const Home = () => {
   const d = useGetUsers(user?.accountId);
   const posts = data?.pages[0]?.data;
 
+  // TODO: infinite scroll is not working
+
   return (
     <div className="flex flex-1">
       <div className="home-container custom-scrollbar">
