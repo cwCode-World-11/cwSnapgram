@@ -63,8 +63,12 @@ const PostDetails = () => {
         </Button>
       </div>
 
-      {isLoading || !postArr?.[0] ? (
+      {isLoading ? (
         <Loader />
+      ) : !postArr?.[0] ? (
+        <>
+          <div>User may edited or deleted this post</div>
+        </>
       ) : (
         <div className="post_details-card border-[#232323]">
           <img

@@ -53,7 +53,7 @@ const PostForm = ({ post, action }) => {
         toast(`${action} post failed. Please try again.`);
         return;
       }
-      return navigate(`/posts/${post.imageId}`);
+      return navigate(`/posts/${updatedPost}`);
     }
 
     // ACTION = CREATE////////////////////////

@@ -68,17 +68,42 @@ export const useGetCurrentUser = () => {
   });
 };
 
+// NOTE: JSM INFINITE QUERY
+// export const useGetPosts = () => {
+//   return useInfiniteQuery({
+//     queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
+//     queryFn: getInfinitePosts,
+//     getNextPageParam: (lastPage) => {
+//       // If there's no data, there are no more pages.
+//       if (lastPage && lastPage.data.length === 0) {
+//         return null;
+//       }
+//       console.log("lastPage:", lastPage);
+//       // Use the $id of the last document as the cursor.
+//       const lastId = lastPage.data[lastPage.data.length - 1].imageId;
+//       return lastId;
+//     },
+//   });
+// };
+
 export const useGetPosts = () => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
-    queryFn: getInfinitePosts,
-    getNextPageParam: (lastPage) => {
+    queryFn: ({ pageParam = 0 }) => getInfinitePosts(pageParam),
+    getNextPageParam: (lastPage, pages) => {
+      // If there's no data, there are no more pages.
       if (lastPage && lastPage.data.length === 0) {
-        return null;
+        return undefined;
       }
-
-      const lastId = lastPage.data[lastPage.data.length - 1].imageId;
-      return lastId;
+      // NOTE: on database {sucess:true,data:arrayOfRows} take advantage of this.
+      // NOTE: pages=[{sucess:true,data:arrayOfRows}] // data=[{},{},{}]
+      // NOTE: here pages.length=1
+      // NOTE: getNextPageParam of return value must be next page number
+      // [pages.length] //return 1
+      // [pages.length,pages.length] //return 2, index 0 is previous pages
+      // [pages.length,pages.length,pages.length] // return 3 , index 0and 1 is previous pages
+      // NOTE: when there is no last page, it returns empty array. so check if condition.
+      return pages.length;
     },
   });
 };
@@ -95,8 +120,6 @@ export const useGetPostById = (postId) => {
     queryKey: [QUERY_KEYS.GET_POST_BY_ID, postId],
     queryFn: () => getPostById(postId),
     enabled: !!postId,
-    refetchOnMount: "always",
-    staleTime: 0, // so it's always considered stale
   });
 };
 

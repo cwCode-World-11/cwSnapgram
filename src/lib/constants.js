@@ -88,6 +88,8 @@ export const tableNames = {
   saves: "saves",
 };
 
+export const PAGE_SIZE = 5;
+
 /////////////DUMMY////////////////////////////////////
 export const dummyPosts = [
   {

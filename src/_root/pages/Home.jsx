@@ -3,14 +3,42 @@ import PostCard from "../../components/PostCard";
 import UserCard from "../../components/UserCard";
 import { useGetPosts, useGetUsers } from "../../lib/tanstackQuery/queries";
 import { useAuth } from "../../context/AuthContext";
+import { useInView } from "react-intersection-observer";
+import { useEffect, useState } from "react";
 
 const Home = () => {
+  const { ref, inView } = useInView();
   const { user } = useAuth();
-  const { data, isPending: isPostLoading } = useGetPosts();
+  // const [pageParam, setPageParam] = useState(0);
+  const {
+    data,
+    isPending: isPostLoading,
+    isError: isErrorPosts,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useGetPosts();
   const d = useGetUsers(user?.accountId);
-  const posts = data?.pages[0]?.data;
+  const posts = data?.pages.flatMap((page) => page.data) ?? [];
 
-  // TODO: infinite scroll is not working
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
+
+  if (isErrorPosts || d?.data?.success === false) {
+    return (
+      <div className="flex flex-1 custom-scrollbar">
+        <div className="home-container custom-scrollbar">
+          <p className="body-medium text-light-1">Something bad happened</p>
+        </div>
+        <div className="home-creators custom-scrollbar">
+          <p className="body-medium text-light-1">Something bad happened</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1">
@@ -32,6 +60,16 @@ const Home = () => {
                 ))
               ) : (
                 <p>No media here</p>
+              )}
+              {hasNextPage && (
+                <div ref={ref} className="w-full flex-center">
+                  {isFetchingNextPage && <Loader />}
+                </div>
+              )}
+              {posts.length > 0 && !hasNextPage && (
+                <div className="w-full flex-center py-4 text-[#a2a2a2]">
+                  End of your scrolling — let’s get back to your work 😏
+                </div>
               )}
             </ul>
           )}

@@ -1,5 +1,5 @@
 import supabase from "./config";
-import { tableNames } from "../lib/constants";
+import { PAGE_SIZE, tableNames } from "../lib/constants";
 import { v4 as uuidV4 } from "uuid";
 
 async function saveUserToDB(insertObj) {
@@ -120,14 +120,18 @@ async function uploadFile(userId, file, updatePostId = undefined) {
     return { success: false, msg: error.message };
   }
 }
-async function getInfinitePosts() {
+
+async function getInfinitePosts(pageParam) {
+  const from = Number(pageParam) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
   try {
     // .select("*, creator:posts_creator_fkey(*)");
     const { data, error } = await supabase
       .from(tableNames.posts)
       .select("*,creator:users(*)")
       .order("updatedAt", { ascending: false })
-      .limit(9);
+      .range(from, to);
+    // .limit(9);
 
     if (error) {
       console.error("error:", error);
@@ -140,6 +144,7 @@ async function getInfinitePosts() {
     return { success: false, msg: error.message };
   }
 }
+
 async function getUsers(userId) {
   if (!userId) {
     console.error(
@@ -165,6 +170,7 @@ async function getUsers(userId) {
     return { success: false, msg: error.message };
   }
 }
+
 async function getPostById(postId) {
   if (!postId) {
     console.error("You can’t fetch post unless you provide your post ID");
@@ -185,6 +191,7 @@ async function getPostById(postId) {
     return { success: false, msg: error.message };
   }
 }
+
 async function updatePost(post) {
   // NOTE: after clicking update button.
   if (!post) {
@@ -223,12 +230,13 @@ async function updatePost(post) {
       console.error("error:", error);
       throw new Error("Error");
     }
-    return true;
+    return updateObj.imageId;
   } catch (error) {
     console.error("error:", error.message);
     return { success: false, msg: error.message };
   }
 }
+
 async function deleteFile(oldFile) {
   // NOTE: after clicking update button.
   if (!oldFile) {
@@ -274,6 +282,7 @@ async function getUserPosts(userId) {
     return { success: false, msg: error.message };
   }
 }
+
 async function deletePost(imageId) {
   if (!imageId) return;
   try {
