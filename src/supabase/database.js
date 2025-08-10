@@ -1,5 +1,11 @@
 import supabase from "./config";
-import { LIKES, PAGE_SIZE, tableNames } from "../lib/constants";
+import {
+  LIKES,
+  PAGE_SIZE,
+  SAVES,
+  SUPABASE_QUERY,
+  tableNames,
+} from "../lib/constants";
 import { v4 as uuidV4 } from "uuid";
 
 // NOTE:Don't delete this code
@@ -142,7 +148,7 @@ async function getInfinitePosts(pageParam) {
     const { data, error } = await supabase
       .from(tableNames.posts)
       .select(
-        "*,creator:users(*),liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))"
+        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved}`
       )
       .order("updatedAt", { ascending: false })
       .range(from, to);
@@ -152,7 +158,6 @@ async function getInfinitePosts(pageParam) {
       console.error("error:", error);
       throw new Error("Error");
     }
-
     return { success: true, data };
   } catch (error) {
     console.error("error:", error.message);
@@ -195,7 +200,7 @@ async function getPostById(postId) {
     const { data, error } = await supabase
       .from(tableNames.posts)
       .select(
-        "*,creator:users(*),liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))"
+        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved}`
       )
       .eq("imageId", postId);
     if (error) {
@@ -285,7 +290,7 @@ async function getUserPosts(userId) {
     const { data, error } = await supabase
       .from(tableNames.posts)
       .select(
-        "*,creator:users!posts_creator_fkey(*),liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))"
+        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved}`
       )
       .order("updatedAt", { ascending: false })
       .eq("creator", userId);
@@ -349,6 +354,55 @@ async function likePost(postId, userId, action) {
     return { success: false, msg: error.message };
   }
 }
+async function savePost(postId, userId, action) {
+  if (!postId || !userId || !action) return;
+  try {
+    if (action === SAVES.savePost) {
+      const { error } = await supabase
+        .from(tableNames.saves)
+        .insert({ id: uuidV4(), postId, userId });
+      if (error) {
+        console.error("error:", error);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from(tableNames.saves)
+        .delete()
+        .eq("postId", postId)
+        .eq("userId", userId);
+
+      if (error) {
+        console.error("error:", error);
+        return;
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error("error:", error.message);
+    return { success: false, msg: error.message };
+  }
+}
+export async function getTest() {
+  try {
+    const { data, error } = await supabase
+      .from(tableNames.posts)
+      .select(
+        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getSaved}`
+      );
+
+    if (error) {
+      console.error("error:", error);
+      return;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("error:", error.message);
+    return { success: false, msg: error.message };
+  }
+}
 
 export {
   saveUserToDB,
@@ -361,6 +415,7 @@ export {
   getUserPosts,
   deletePost,
   likePost,
+  savePost,
 };
 
 // [

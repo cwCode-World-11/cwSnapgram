@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
-import { checkIsLiked } from "@/lib/utils";
-import { useLikePost } from "../lib/tanstackQuery/queries";
+import { useLikePost, useSavePost } from "../lib/tanstackQuery/queries";
 import toast from "react-hot-toast";
-import { LIKES } from "../lib/constants";
+import { LIKES, SAVES } from "../lib/constants";
 import Loader from "./Loader";
+import { checkIsLiked, checkIsSaved } from "../lib/utils";
 
 const PostStats = ({ post, userId }) => {
   const { mutateAsync: likePost, isPending: isLikeLoading } = useLikePost();
+  const { mutateAsync: savePost, isPending: isSaveLoading } = useSavePost();
   const [likes, setlikes] = useState(post?.liked);
 
   const location = useLocation();
-  const isSaved = true;
+  const isSaved = checkIsSaved(post?.saved, userId);
 
   useEffect(() => {
     setlikes(post?.liked);
@@ -35,9 +36,23 @@ const PostStats = ({ post, userId }) => {
     }
   };
 
-  const handleSavePost = (e) => {
-    // e.stopPropagation();
+  const handleSavePost = async (e) => {
+    e.stopPropagation();
     e.preventDefault();
+    let action;
+    try {
+      // NOTE: toggle
+      if (checkIsLiked(post?.saved, userId)) {
+        action = SAVES.unSavePost;
+        await savePost({ postId: post?.imageId, userId, action });
+      } else {
+        action = SAVES.savePost;
+        await savePost({ postId: post?.imageId, userId, action });
+      }
+    } catch (error) {
+      console.error("error:", error);
+      toast.error("Failed to SAVED post");
+    }
   };
 
   const containerStyles = location.pathname.startsWith("/profile")
@@ -69,14 +84,18 @@ const PostStats = ({ post, userId }) => {
       )}
 
       <div className="flex gap-2">
-        <img
-          src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
-          alt="share"
-          width={20}
-          height={20}
-          className="cursor-pointer"
-          onClick={(e) => handleSavePost(e)}
-        />
+        {isSaveLoading ? (
+          <Loader />
+        ) : (
+          <img
+            src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
+            alt="share"
+            width={20}
+            height={20}
+            className="cursor-pointer"
+            onClick={(e) => handleSavePost(e)}
+          />
+        )}
       </div>
     </div>
   );

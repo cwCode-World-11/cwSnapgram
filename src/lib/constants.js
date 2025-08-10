@@ -92,9 +92,22 @@ export const tableNames = {
 
 export const PAGE_SIZE = 5;
 
+export const SUPABASE_QUERY = {
+  posts: {
+    getAllColumn: "*",
+    getLiked: "liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))",
+    getUsers: "creator:users!posts_creator_fkey(*)",
+    getSaved: "saved:saves!saves_postId_fkey(user:users!saves_userId_fkey(*))",
+  },
+};
+
 export const LIKES = {
   likePost: "like",
   unLikePost: "unLike",
+};
+export const SAVES = {
+  savePost: "save",
+  unSavePost: "unSave",
 };
 
 /////////////DUMMY////////////////////////////////////

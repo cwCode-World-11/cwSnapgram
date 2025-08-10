@@ -26,7 +26,7 @@ const PostDetails = () => {
   const relatedPosts = useMemo(() => {
     if (!userPosts || !postArr?.[0]) return [];
     return userPosts.filter((p) => p?.imageId !== postArr[0]?.imageId);
-  }, [userPosts]);
+  }, [userPosts, postArr]);
 
   const handleDeletePost = async () => {
     try {
@@ -173,7 +173,7 @@ const PostDetails = () => {
         {isUserPostLoading || !relatedPosts ? (
           <Loader />
         ) : (
-          <GridPostList posts={relatedPosts} />
+          <GridPostList posts={relatedPosts.slice(0, 10)} />
         )}
       </div>
     </div>

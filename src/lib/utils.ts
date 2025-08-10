@@ -87,3 +87,10 @@ export const checkIsLiked = (likeList: any[], userId: string) => {
     }
     })
 };
+export const checkIsSaved = (savedList: any[], userId: string) => {
+  return savedList.find(u=>{
+    if(u.user.accountId===userId){
+      return true;
+    }
+    })
+};

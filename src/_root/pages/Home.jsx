@@ -4,7 +4,8 @@ import UserCard from "../../components/UserCard";
 import { useGetPosts, useGetUsers } from "../../lib/tanstackQuery/queries";
 import { useAuth } from "../../context/AuthContext";
 import { useInView } from "react-intersection-observer";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { getTest } from "../../supabase/database";
 
 const Home = () => {
   const { ref, inView } = useInView();
@@ -20,6 +21,20 @@ const Home = () => {
   } = useGetPosts();
   const d = useGetUsers(user?.accountId);
   const posts = data?.pages.flatMap((page) => page.data) ?? [];
+
+  useEffect(() => {
+    const a = async () => {
+      try {
+        const d = await getTest();
+        console.log("d:", d);
+      } catch (error) {
+        console.log("error:", error);
+      }
+    };
+    // a();
+  }, []);
+
+  // console.log("posts:", posts);
 
   useEffect(() => {
     if (inView && hasNextPage) {
