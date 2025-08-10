@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router";
-import { multiFormatDateString } from "../../lib/utils";
+import { formatInstagramTime } from "../../lib/utils";
 import { Button } from "../../components/ui/button";
 import Loader from "../../components/Loader";
 import GridPostList from "../../components/GridPostList";
@@ -17,16 +17,16 @@ const PostDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useAuth();
-  const { data: postArr, isPending: isLoading } = useGetPostById(id);
   const { data: userPosts, isPending: isUserPostLoading } = useGetUserPosts(
     user?.accountId
   );
+  const { data: postArr, isPending: isLoading } = useGetPostById(id);
   const { mutateAsync: deletePost, isPending: isDeletePostLoading } =
     useDeletePost();
   const relatedPosts = useMemo(() => {
     if (!userPosts || !postArr?.[0]) return [];
     return userPosts.filter((p) => p?.imageId !== postArr[0]?.imageId);
-  }, [userPosts, postArr]);
+  }, [userPosts]);
 
   const handleDeletePost = async () => {
     try {
@@ -97,7 +97,7 @@ const PostDetails = () => {
                   </p>
                   <div className="flex-center gap-2 text-light-3">
                     <p className="subtle-semibold lg:small-regular ">
-                      {multiFormatDateString(postArr?.[0]?.createdAt)}
+                      {formatInstagramTime(postArr?.[0]?.createdAt)}
                     </p>
                     •
                     <p className="subtle-semibold lg:small-regular">

@@ -85,10 +85,17 @@ export const QUERY_KEYS = {
 export const tableNames = {
   users: "users",
   posts: "posts",
+  likes: "likes",
   saves: "saves",
+  follows: "follows",
 };
 
 export const PAGE_SIZE = 5;
+
+export const LIKES = {
+  likePost: "like",
+  unLikePost: "unLike",
+};
 
 /////////////DUMMY////////////////////////////////////
 export const dummyPosts = [

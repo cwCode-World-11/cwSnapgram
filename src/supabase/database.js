@@ -1,6 +1,19 @@
 import supabase from "./config";
-import { PAGE_SIZE, tableNames } from "../lib/constants";
+import { LIKES, PAGE_SIZE, tableNames } from "../lib/constants";
 import { v4 as uuidV4 } from "uuid";
+
+// NOTE:Don't delete this code
+// .from(tableNames.likes)
+// .select("*,posts:posts!like_postId_fkey(*)");
+// [{likes column...,posts:{postsTable column...}}]
+
+//seleted post table
+// liked:likes!likes_postId_fkey(
+//       userId,
+//         user:likes!likes_userId_fkey(*)
+//       )
+// NOTE: <alias>:<whichDataINeedTable>!<foreignKeyedTable>_<foreignKeyedTableColumn>_fkey(*)
+// NOTE:foreignKeyedTable has foreign key
 
 async function saveUserToDB(insertObj) {
   // {
@@ -128,7 +141,9 @@ async function getInfinitePosts(pageParam) {
     // .select("*, creator:posts_creator_fkey(*)");
     const { data, error } = await supabase
       .from(tableNames.posts)
-      .select("*,creator:users(*)")
+      .select(
+        "*,creator:users(*),liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))"
+      )
       .order("updatedAt", { ascending: false })
       .range(from, to);
     // .limit(9);
@@ -179,7 +194,9 @@ async function getPostById(postId) {
   try {
     const { data, error } = await supabase
       .from(tableNames.posts)
-      .select("*,creator:users(*)")
+      .select(
+        "*,creator:users(*),liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))"
+      )
       .eq("imageId", postId);
     if (error) {
       console.error("error:", error);
@@ -267,7 +284,9 @@ async function getUserPosts(userId) {
   try {
     const { data, error } = await supabase
       .from(tableNames.posts)
-      .select("*,creator:users(*)")
+      .select(
+        "*,creator:users!posts_creator_fkey(*),liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))"
+      )
       .order("updatedAt", { ascending: false })
       .eq("creator", userId);
 
@@ -300,6 +319,36 @@ async function deletePost(imageId) {
     return { success: false, msg: error.message };
   }
 }
+async function likePost(postId, userId, action) {
+  if (!postId || !userId || !action) return;
+  try {
+    if (action === LIKES.likePost) {
+      const { error } = await supabase
+        .from(tableNames.likes)
+        .insert({ id: uuidV4(), postId, userId });
+      if (error) {
+        console.error("error:", error);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from(tableNames.likes)
+        .delete()
+        .eq("postId", postId)
+        .eq("userId", userId);
+
+      if (error) {
+        console.error("error:", error);
+        return;
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error("error:", error.message);
+    return { success: false, msg: error.message };
+  }
+}
 
 export {
   saveUserToDB,
@@ -311,6 +360,7 @@ export {
   updatePost,
   getUserPosts,
   deletePost,
+  likePost,
 };
 
 // [
@@ -321,7 +371,7 @@ export {
 //             "Art"
 //         ],
 //         "imageId": "4f6a84d1-6421-407a-a77c-45b7d0eda75e",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/35e4b5ad-3333-4209-b0f3-697ee0ed6ce1/4f6a84d1-6421-407a-a77c-45b7d0eda75e.png",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.png",
 //         "location": "USA",
 //         "caption": "Tom cruise",
 //         "likes": null,
@@ -346,7 +396,7 @@ export {
 //             "tube"
 //         ],
 //         "imageId": "b92761bd-425f-46da-88ff-cdd76c5c57db",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/c9201c7f-b6d3-4135-aeb5-dc5c18497182/b92761bd-425f-46da-88ff-cdd76c5c57db.png",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.png",
 //         "location": "NYC",
 //         "caption": "Meta logo ",
 //         "likes": null,
@@ -361,7 +411,7 @@ export {
 //             "gift"
 //         ],
 //         "imageId": "c944030b-82ca-4369-9082-f45ca5420b30",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/35e4b5ad-3333-4209-b0f3-697ee0ed6ce1/c944030b-82ca-4369-9082-f45ca5420b30.jpg",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.jpg",
 //         "location": "World",
 //         "caption": "Feel the beauty of nature🎴",
 //         "likes": null,
@@ -386,7 +436,7 @@ export {
 //             "modern"
 //         ],
 //         "imageId": "c4b90a5d-4105-4b74-aa89-14bfbca4ff83",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/35e4b5ad-3333-4209-b0f3-697ee0ed6ce1/c4b90a5d-4105-4b74-aa89-14bfbca4ff83.jpg",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.jpg",
 //         "location": "USA",
 //         "caption": "Charlize Theron",
 //         "likes": null,
@@ -411,7 +461,7 @@ export {
 //             "star"
 //         ],
 //         "imageId": "52c3e5c2-f2e0-45dd-a021-00b92560247b",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/35e4b5ad-3333-4209-b0f3-697ee0ed6ce1/52c3e5c2-f2e0-45dd-a021-00b92560247b.jpg",
+//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.jpg",
 //         "location": "USA",
 //         "caption": "Milla Jovovich",
 //         "likes": null,

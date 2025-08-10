@@ -14,6 +14,7 @@ import {
   updatePost,
   getUserPosts,
   deletePost,
+  likePost,
 } from "../../supabase/database";
 import { QUERY_KEYS } from "../constants";
 
@@ -60,6 +61,31 @@ export const useDeletePost = () => {
   });
 };
 
+export const useLikePost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ postId, userId, action }) =>
+      likePost(postId, userId, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+    },
+  });
+};
+
 // Get Method
 export const useGetCurrentUser = () => {
   return useQuery({
@@ -88,7 +114,7 @@ export const useGetCurrentUser = () => {
 
 export const useGetPosts = () => {
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
+    queryKey: [QUERY_KEYS.GET_INFINITE_POSTS, QUERY_KEYS.GET_POSTS],
     queryFn: ({ pageParam = 0 }) => getInfinitePosts(pageParam),
     getNextPageParam: (lastPage, pages) => {
       // If there's no data, there are no more pages.
@@ -120,6 +146,8 @@ export const useGetPostById = (postId) => {
     queryKey: [QUERY_KEYS.GET_POST_BY_ID, postId],
     queryFn: () => getPostById(postId),
     enabled: !!postId,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
 };
 
@@ -128,7 +156,5 @@ export const useGetUserPosts = (userId) => {
     queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
     queryFn: () => getUserPosts(userId),
     enabled: !!userId,
-    refetchOnMount: "always",
-    staleTime: 0, // so it's always considered stale
   });
 };
