@@ -2,8 +2,6 @@ import { Link } from "react-router";
 import PostStats from "./PostStats";
 
 const GridPostList = ({ posts, showUser = true, showStats = true }) => {
-  const user = { id: "123" };
-
   return (
     <ul className="grid-container custom-scrollbar">
       {posts.map((post) => (
@@ -33,7 +31,9 @@ const GridPostList = ({ posts, showUser = true, showStats = true }) => {
                 <p className="line-clamp-1">{post.creator.name}</p>
               </div>
             )}
-            {showStats && <PostStats post={post} userId={user.id} />}
+            {showStats && (
+              <PostStats post={post} userId={post?.creator?.accountId} />
+            )}
           </div>
         </li>
       ))}

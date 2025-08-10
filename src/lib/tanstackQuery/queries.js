@@ -69,6 +69,9 @@ export const useLikePost = () => {
       likePost(postId, userId, action),
     onSuccess: () => {
       queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_POSTS],
+      });
+      queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_BY_ID],
       });
       queryClient.invalidateQueries({
@@ -92,6 +95,9 @@ export const useSavePost = () => {
     mutationFn: ({ postId, userId, action }) =>
       savePost(postId, userId, action),
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_POSTS],
+      });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_BY_ID],
       });
