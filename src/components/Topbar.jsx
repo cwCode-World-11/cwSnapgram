@@ -9,6 +9,10 @@ const Topbar = () => {
   const { user, setUser, setCurrentUser } = useAuth();
   const navigate = useNavigate();
 
+  if (!user) {
+    return "loading...";
+  }
+
   const handleSignOut = async (e) => {
     e.preventDefault();
     try {

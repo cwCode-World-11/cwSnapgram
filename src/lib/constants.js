@@ -93,6 +93,14 @@ export const tableNames = {
 export const PAGE_SIZE = 5;
 
 export const SUPABASE_QUERY = {
+  users: {
+    getAllColumn: "*",
+    getPosts: "posts:posts!posts_creator_fkey(*)",
+    getFollowing:
+      "following:follows!follows_userId_fkey(user:follows_followsId_fkey(*))",
+    getFollowers:
+      "followers:follows!follows_followsId_fkey(user:follows_userId_fkey(*))",
+  },
   posts: {
     getAllColumn: "*",
     getLiked: "liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))",
@@ -108,6 +116,10 @@ export const LIKES = {
 export const SAVES = {
   savePost: "save",
   unSavePost: "unSave",
+};
+export const FOLLOWS = {
+  follow: "follow",
+  notFollowing: "notFollowing",
 };
 
 /////////////DUMMY////////////////////////////////////

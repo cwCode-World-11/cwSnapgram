@@ -9,31 +9,11 @@ const AuthContext = React.createContext();
 const useAuth = () => useContext(AuthContext);
 
 const AuthProvider = ({ children }) => {
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null); // Stores session user
   const [user, setUser] = useState(); // Stores additional user data
+  const [currentUser, setCurrentUser] = useState(); // Stores session user
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   // Listen for auth state changes
-  //   const { data: authListener } = supabase.auth.onAuthStateChange(
-  //     (_event, session) => {
-  //       if (session?.user) {
-  //         setCurrentUser(session.user); // Set logged-in user
-  //       } else {
-  //         setCurrentUser(null); // No user, redirect to login
-  //         navigate("/login");
-  //       }
-  //       setIsAuthLoading(false);
-  //     }
-  //   );
-
-  //   // Cleanup listener on component unmount
-  //   return () => {
-  //     authListener.subscription.unsubscribe();
-  //   };
-  // }, []);
 
   useEffect(() => {
     setIsAuthLoading(true);
@@ -47,6 +27,7 @@ const AuthProvider = ({ children }) => {
         try {
           const userData = await getCurrentUser(); // Fetch user data from the database
           setUser(userData.data); // Store the user data
+          navigate("/");
         } catch (err) {
           console.log("Error fetching user data:", err);
         } finally {
@@ -67,6 +48,7 @@ const AuthProvider = ({ children }) => {
     setCurrentUser,
     user,
     setUser,
+    isAuthLoading,
   };
 
   return (

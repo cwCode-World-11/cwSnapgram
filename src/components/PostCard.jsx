@@ -73,6 +73,7 @@ const PostCard = ({ post }) => {
           src={post.imageUrl || "/assets/icons/profile-placeholder.svg"}
           alt="post image"
           className="post-card_img"
+          loading="lazy"
         />
       </Link>
       <PostStats post={post} userId={user?.accountId} />

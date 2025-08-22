@@ -17,13 +17,16 @@ import ProfileUploader from "../../components/ProfileUploader";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Textarea } from "../../components/ui/textarea";
-import { dummyUsers as creators } from "../../lib/constants";
+import { useAuth } from "../../context/AuthContext";
 import { ProfileValidation } from "../../lib/validation";
+import { useUpdateUser } from "../../lib/tanstackQuery/queries";
 
 const UpdateProfile = () => {
-  const navigate = useNavigate();
   const { id } = useParams();
-  const user = creators[0];
+  const { user, setUser } = useAuth();
+  const navigate = useNavigate();
+  const { mutateAsync: updateUser, isPending: isLoadingUpdate } =
+    useUpdateUser();
   const form = useForm({
     resolver: zodResolver(ProfileValidation),
     defaultValues: {
@@ -36,8 +39,7 @@ const UpdateProfile = () => {
   });
 
   // Queries
-  const currentUser = creators[0];
-  const isLoadingUpdate = false;
+  const currentUser = user;
 
   if (!currentUser)
     return (
@@ -48,11 +50,19 @@ const UpdateProfile = () => {
 
   // Handler
   const handleUpdate = async (value) => {
+    console.log("value:", value);
+    const updatedUser = await updateUser({
+      accountId: user.accountId,
+      imageUrl: user.imageUrl,
+      ...value,
+    });
+
     if (!updatedUser) {
-      toast.error({
-        title: `Update user failed. Please try again.`,
-      });
+      toast.error(`Update user failed. Please try again.`);
+      return;
     }
+
+    setUser(updatedUser);
     return navigate(`/profile/${id}`);
   };
 

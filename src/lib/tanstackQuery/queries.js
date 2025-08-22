@@ -16,13 +16,26 @@ import {
   deletePost,
   likePost,
   savePost,
+  getUserById,
+  followUser,
+  getLikedOrSavedPost,
+  updateUser,
 } from "../../supabase/database";
 import { QUERY_KEYS } from "../constants";
 
 // Post Method
 export const useSaveUserToDB = () => {
+  const queryCilent = useQueryClient();
   return useMutation({
     mutationFn: (user) => saveUserToDB(user),
+    onSuccess: () => {
+      queryCilent.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USERS],
+      });
+      queryCilent.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+    },
   });
 };
 
@@ -86,6 +99,9 @@ export const useLikePost = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
       });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
     },
   });
 };
@@ -109,6 +125,44 @@ export const useSavePost = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+    },
+  });
+};
+export const useFollowUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ followsId, userId, action }) =>
+      followUser(followsId, userId, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+    },
+  });
+};
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userObj) => updateUser(userObj),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_FILE_PREVIEW],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USERS],
       });
     },
   });
@@ -164,7 +218,7 @@ export const useGetPosts = () => {
 
 export const useGetUsers = (userId) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_USERS],
+    queryKey: [QUERY_KEYS.GET_USERS, userId],
     queryFn: () => getUsers(userId),
   });
 };
@@ -183,6 +237,20 @@ export const useGetUserPosts = (userId) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
     queryFn: () => getUserPosts(userId),
+    enabled: !!userId,
+  });
+};
+export const useGetUserById = (userId) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_BY_ID, userId],
+    queryFn: () => getUserById(userId),
+    enabled: !!userId,
+  });
+};
+export const useGetLikedOrSavedPost = (userId, ennaVennumUnnakku) => {
+  return useQuery({
+    queryKey: [userId, ennaVennumUnnakku],
+    queryFn: () => getLikedOrSavedPost(userId, ennaVennumUnnakku),
     enabled: !!userId,
   });
 };

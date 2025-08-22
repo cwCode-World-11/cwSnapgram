@@ -1,10 +1,13 @@
 import { Link } from "react-router";
 import PostStats from "./PostStats";
+import { useAuth } from "../context/AuthContext";
 
 const GridPostList = ({ posts, showUser = true, showStats = true }) => {
+  const { user: currentUser } = useAuth();
+
   return (
     <ul className="grid-container custom-scrollbar">
-      {posts.map((post) => (
+      {posts?.map((post) => (
         <li key={post.imageId} className="relative min-w-80 h-80">
           <Link
             to={`/posts/${post.imageId}`}
@@ -32,7 +35,7 @@ const GridPostList = ({ posts, showUser = true, showStats = true }) => {
               </div>
             )}
             {showStats && (
-              <PostStats post={post} userId={post?.creator?.accountId} />
+              <PostStats post={post} userId={currentUser?.accountId} />
             )}
           </div>
         </li>

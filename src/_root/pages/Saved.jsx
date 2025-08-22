@@ -1,9 +1,22 @@
 import Loader from "../../components/Loader";
 import GridPostList from "../../components/GridPostList";
 import { dummyPosts as savePosts } from "../../lib/constants";
+import { useGetLikedOrSavedPost } from "../../lib/tanstackQuery/queries";
+import { useAuth } from "../../context/AuthContext";
 
 const Saved = () => {
-  const currentUser = true;
+  const { user: currentUser } = useAuth();
+  const { data: savePosts, isPending } = useGetLikedOrSavedPost(
+    currentUser?.accountId,
+    "saved"
+  );
+
+  if (isPending || !currentUser)
+    return (
+      <div className="flex-center w-full h-full">
+        <Loader />
+      </div>
+    );
   return (
     <div className="saved-container custom-scrollbar overflow-x-auto">
       <div className="flex gap-2 w-full max-w-5xl">

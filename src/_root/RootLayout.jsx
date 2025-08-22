@@ -1,5 +1,5 @@
 import { Outlet } from "react-router";
-import LeftSidebar from "../components/Leftsidebar";
+import LeftSidebar from "../components/LeftSidebar";
 import Topbar from "../components/Topbar";
 import Bottombar from "../components/Bottombar";
 

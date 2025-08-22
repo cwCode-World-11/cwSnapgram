@@ -18,9 +18,12 @@ import {
 import { SignupValidation as formSchema } from "../../lib/validation";
 import { signUp } from "../../supabase/auth";
 import { useSaveUserToDB } from "../../lib/tanstackQuery/queries";
+import { useAuth } from "../../context/AuthContext";
+import { getCurrentUser } from "../../supabase/database";
 
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = useAuth();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,14 +62,21 @@ const Signup = () => {
         username: user.username,
         imageUrl: `https://ui-avatars.com/api/?name=${user?.name}&size=256&bold=true&length=${len}`,
       };
-      await saveUserToDB(u);
+      const { success, data } = await saveUserToDB(u);
       toast("Saving user data database...");
       if (error) {
         toast.error("Failed to insert data in database");
         return;
       }
-      form.reset();
-      navigate("/");
+      if (success) {
+        const { success: fetchSuccess, data: fetchUser } =
+          await getCurrentUser();
+        if (fetchSuccess) {
+          setUser(fetchUser);
+          form.reset();
+          return navigate("/");
+        }
+      }
     } catch (error) {
       console.error("error:", error);
       toast.error("Error while signing or creating database");

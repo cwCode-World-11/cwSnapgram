@@ -5,16 +5,24 @@ import { logOut } from "../supabase/auth";
 import { useAuth } from "../context/AuthContext";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
 
 const LeftSidebar = () => {
-  const { user, setUser, setCurrentUser, currentUser } = useAuth();
+  const { user, setUser, setCurrentUser, isAuthLoading } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  if (!user) {
+  // useEffect(() => {
+  //   if (!user) {
+  //     window.location.reload();
+  //   }
+  // }, []);
+
+  if (!isAuthLoading && !user) {
     return (
       <div className="lg:flex items-center justify-center w-screen h-screen">
-        <Loader size={64} />
+        user not found!!!
+        <p>reload the page</p>
       </div>
     );
   }
@@ -23,10 +31,10 @@ const LeftSidebar = () => {
     e.preventDefault();
     try {
       await logOut();
-      navigate("/login");
-      toast.success("You were logged out");
       setCurrentUser(null);
       setUser(null);
+      navigate("/login");
+      toast.success("You were logged out");
     } catch (error) {
       console.log("error:", error);
       toast.error("Failed to logging out!!!");
@@ -51,7 +59,7 @@ const LeftSidebar = () => {
           <img
             src={user?.imageUrl || "/assets/profile1.jpg"}
             alt="profile"
-            className="h-14 w-14 rounded-full"
+            className="h-14 w-14 rounded-full object-cover"
           />
           <div className="flex flex-col">
             <p className="body-bold">{user?.name || "userName"}</p>

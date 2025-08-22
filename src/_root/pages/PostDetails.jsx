@@ -78,7 +78,7 @@ const PostDetails = () => {
           />
 
           <div className="post_details-info">
-            <div className="flex-between w-full">
+            <div className="flex-between w-full gap-1">
               <Link
                 to={`/profile/${postArr?.[0]?.creator.accountId}`}
                 className="flex items-center gap-3"
@@ -96,7 +96,7 @@ const PostDetails = () => {
                     {postArr?.[0]?.creator.name}
                   </p>
                   <div className="flex-center gap-2 text-light-3">
-                    <p className="subtle-semibold lg:small-regular ">
+                    <p className="subtle-semibold break-all lg:small-regular">
                       {formatInstagramTime(postArr?.[0]?.createdAt)}
                     </p>
                     •
@@ -107,7 +107,7 @@ const PostDetails = () => {
                 </div>
               </Link>
 
-              <div className="flex-center gap-4">
+              <div className="flex-center sm:gap-1">
                 <Link
                   to={`/update-post/${postArr?.[0]?.imageId}`}
                   className={`${

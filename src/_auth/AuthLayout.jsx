@@ -4,8 +4,8 @@ import photo from "/assets/authDisplay.jpg";
 import { useAuth } from "../context/AuthContext";
 
 const AuthLayout = () => {
-  const { currentUser } = useAuth();
-  const isAuthenticated = currentUser && true;
+  const { user } = useAuth();
+  const isAuthenticated = user && true;
 
   return (
     <>

@@ -10,8 +10,11 @@ import LikedPost from "./LikedPost";
 import { Button } from "../../components/ui/button";
 import Loader from "../../components/Loader";
 import GridPostList from "../../components/GridPostList";
-import { dummyPosts as posts } from "../../lib/constants";
-import { dummyUsers as creators } from "../../lib/constants";
+import { useAuth } from "../../context/AuthContext";
+import { useFollowUser, useGetUserById } from "../../lib/tanstackQuery/queries";
+import { useEffect, useState } from "react";
+import { FOLLOWS } from "../../lib/constants";
+import toast from "react-hot-toast";
 
 const StatBlock = ({ value, label }) => (
   <div className="flex-center gap-2">
@@ -22,15 +25,62 @@ const StatBlock = ({ value, label }) => (
 
 const Profile = () => {
   const { id } = useParams();
-  const user = creators[0]; //NOTE: Another man profile.
+  const { user: currentUser } = useAuth();
+  const [hasFollowed, setHasFollowed] = useState(false);
+  const { data: getUser, isPending: isGetUserByIdLoading } = useGetUserById(id);
+  const { mutateAsync: followUser, isPending: isFollowingLoading } =
+    useFollowUser();
+
   const { pathname } = useLocation();
+  const btnStyle = !hasFollowed
+    ? "bg-[#877eff] hover:bg-[#202020] text-[#fff] flex gap-2 px-5"
+    : "bg-[#202020] hover:bg-[#877eff] text-[#fff] flex gap-2 px-5";
 
-  // ?NOTE: manually adding data
-  const currentUser = creators[0];
-  currentUser.$id = "123";
-  currentUser.posts = posts;
+  useEffect(() => {
+    if (getUser?.followers?.length) {
+      const isFollowing = getUser.followers.some(
+        (u) => u.user.accountId === currentUser?.accountId
+      );
+      setHasFollowed(isFollowing);
+    } else {
+      setHasFollowed(false);
+    }
+  }, [getUser, currentUser?.accountId]);
 
-  if (!currentUser)
+  const handleFollow = async (followsId) => {
+    let action;
+    try {
+      if (hasFollowed) {
+        // NOTE: unfollow currentUser.
+        action = FOLLOWS.follow;
+        const s = await followUser({
+          followsId,
+          userId: currentUser.accountId,
+          action,
+        });
+        if (s.success) {
+          setHasFollowed(false);
+          toast("Unfollowing " + currentUser.name);
+        }
+      } else {
+        action = FOLLOWS.notFollowing;
+        const s = await followUser({
+          followsId,
+          userId: currentUser?.accountId,
+          action,
+        });
+        if (s.success) {
+          setHasFollowed(true);
+          toast("Following " + currentUser.name);
+        }
+      }
+    } catch (error) {
+      console.error("error:", error);
+      toast.error("Failled to follow the currentUser");
+    }
+  };
+
+  if (!getUser || isGetUserByIdLoading)
     return (
       <div className="flex-center w-full h-full">
         <Loader />
@@ -42,39 +92,41 @@ const Profile = () => {
       <div className="profile-inner_container">
         <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
           <img
-            src={
-              currentUser.imageUrl || "/assets/icons/profile-placeholder.svg"
-            }
+            src={getUser.imageUrl || "/assets/icons/profile-placeholder.svg"}
             alt="profile"
             className="w-28 h-28 lg:h-36 lg:w-36 rounded-full object-cover"
           />
           <div className="flex flex-col flex-1 justify-between md:mt-2">
             <div className="flex flex-col w-full">
               <h1 className="text-center xl:text-left h3-bold md:h1-semibold w-full">
-                {currentUser.name}
+                {getUser.name}
               </h1>
               <p className="small-regular md:body-medium text-light-3 text-center xl:text-left">
-                @{currentUser.username}
+                @{getUser.username}
               </p>
             </div>
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
-              <StatBlock value={20} label="Posts" />
-              <StatBlock value={20} label="Followers" />
-              <StatBlock value={20} label="Following" />
+              <StatBlock value={getUser?.posts.length} label="Posts" />
+              <StatBlock value={getUser?.followers?.length} label="Followers" />
+              <StatBlock value={getUser?.following?.length} label="Following" />
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">
-              {currentUser.bio}
+              {getUser.bio}
             </p>
           </div>
 
           <div className="flex justify-center gap-4">
-            <div className={`${user.id !== currentUser.$id && "hidden"}`}>
+            <div
+              className={`${
+                currentUser?.accountId !== getUser.accountId && "hidden"
+              }`}
+            >
               <Link
-                to={`/update-profile/${currentUser.$id}`}
+                to={`/update-profile/${getUser.accountId}`}
                 className={`h-12 bg-dark-4 px-5 text-light-1 flex-center gap-2 rounded-lg ${
-                  user.id !== currentUser.$id && "hidden"
+                  currentUser?.accountId !== getUser.accountId && "hidden"
                 }`}
               >
                 <img
@@ -88,21 +140,30 @@ const Profile = () => {
                 </p>
               </Link>
             </div>
-            <div className={`${user.id === id && "hidden"}`}>
-              <Button type="button" className="shad-button_primary px-8">
-                Follow
-              </Button>
+            <div
+              className={`${currentUser?.accountId === id && "hidden"}`}
+              onClick={() => handleFollow(id)}
+            >
+              {
+                <Button
+                  type="button"
+                  className={`shad-button_primary px-8 ${btnStyle}`}
+                >
+                  {isFollowingLoading && <Loader />}
+                  {!isFollowingLoading && (hasFollowed ? "Unfollow" : "Follow")}
+                </Button>
+              }
             </div>
           </div>
         </div>
       </div>
 
-      {currentUser.$id === user.id && (
+      {getUser.accountId === currentUser?.accountId && (
         <div className="flex max-w-5xl w-full">
           <Link
             to={`/profile/${id}`}
             className={`profile-tab rounded-l-lg ${
-              pathname === `/profile/${id}` && "!bg-dark-3"
+              pathname === `/profile/${id}` && "!bg-[#232323]"
             }`}
           >
             <img
@@ -116,7 +177,7 @@ const Profile = () => {
           <Link
             to={`/profile/${id}/liked-posts`}
             className={`profile-tab rounded-r-lg ${
-              pathname === `/profile/${id}/liked-posts` && "!bg-dark-3"
+              pathname === `/profile/${id}/liked-posts` && "!bg-[#232323]"
             }`}
           >
             <img
@@ -133,9 +194,9 @@ const Profile = () => {
       <Routes>
         <Route
           index
-          element={<GridPostList posts={currentUser.posts} showUser={false} />}
+          element={<GridPostList posts={getUser?.posts} showUser={false} />}
         />
-        {currentUser.$id === user.id && (
+        {getUser.accountId === currentUser?.accountId && (
           <Route path="/liked-posts" element={<LikedPost />} />
         )}
       </Routes>

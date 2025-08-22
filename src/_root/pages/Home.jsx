@@ -5,7 +5,6 @@ import { useGetPosts, useGetUsers } from "../../lib/tanstackQuery/queries";
 import { useAuth } from "../../context/AuthContext";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
-import { getTest } from "../../supabase/database";
 
 const Home = () => {
   const { ref, inView } = useInView();
@@ -21,20 +20,6 @@ const Home = () => {
   } = useGetPosts();
   const d = useGetUsers(user?.accountId);
   const posts = data?.pages.flatMap((page) => page.data) ?? [];
-
-  useEffect(() => {
-    const a = async () => {
-      try {
-        const d = await getTest();
-        console.log("d:", d);
-      } catch (error) {
-        console.log("error:", error);
-      }
-    };
-    // a();
-  }, []);
-
-  // console.log("posts:", posts);
 
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -94,13 +79,19 @@ const Home = () => {
       <div className="home-creators hidden custom-scrollbar">
         <h3 className="h3-bold text-light-1">Top Creators</h3>
         {d.isPending && <Loader />}
-        {!d.isPending && d?.data?.data.length > 0 ? (
+        {!d.isPending && d?.data?.data?.length > 0 ? (
           <ul className="grid 2xl:grid-cols-2 gap-6">
-            {d.data.data?.map((creator) => (
-              <li key={creator?.accountId}>
-                <UserCard user={creator} />
-              </li>
-            ))}
+            {d.data.data?.map((creator) => {
+              return (
+                !d.data.currentUserFollowing.find(
+                  (u) => u.followsId === creator?.accountId
+                ) && (
+                  <li key={creator?.accountId}>
+                    <UserCard user={creator} />
+                  </li>
+                )
+              );
+            })}
           </ul>
         ) : (
           <p>No creators right for now</p>

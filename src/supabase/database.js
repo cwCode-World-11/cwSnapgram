@@ -1,5 +1,6 @@
 import supabase from "./config";
 import {
+  FOLLOWS,
   LIKES,
   PAGE_SIZE,
   SAVES,
@@ -18,7 +19,7 @@ import { v4 as uuidV4 } from "uuid";
 //       userId,
 //         user:likes!likes_userId_fkey(*)
 //       )
-// NOTE: <alias>:<whichDataINeedTable>!<foreignKeyedTable>_<foreignKeyedTableColumn>_fkey(*)
+// NOTE:otherTable selected<alias>:<whichDataINeedTable>!<foreignKeyedTable>_<foreignKeyedTableColumn>_fkey(*)
 // NOTE:foreignKeyedTable has foreign key
 
 async function saveUserToDB(insertObj) {
@@ -55,7 +56,7 @@ async function getCurrentUser() {
         .eq("accountId", d.data.session.user.id);
       if (error) {
         console.error("error:", error);
-        throw new Error("Error");
+        return [];
       }
       return { success: true, data: dataObj[0] };
     }
@@ -165,26 +166,32 @@ async function getInfinitePosts(pageParam) {
   }
 }
 
+// TODO: except myself and followers
 async function getUsers(userId) {
   if (!userId) {
-    console.error(
-      "You can’t fetch other users unless you provide your own user ID"
-    );
     return;
   }
-  // TODO: except myself and followers
   try {
     const { data, error } = await supabase
       .from(tableNames.users)
-      .select("imageUrl,name,username,accountId")
-      .limit(10)
+      .select("*")
+      .limit(20)
       .neq("accountId", userId);
+    // .neq("userId", userId);
     if (error) {
       console.error("error:", error);
-      throw new Error("Error");
+      return [];
+    }
+    const { data: followsData, error: followsError } = await supabase
+      .from(tableNames.follows)
+      .select("*")
+      .eq("userId", userId);
+    if (followsError) {
+      console.error("error:", followsError);
+      return [];
     }
 
-    return { success: true, data };
+    return { success: true, data, currentUserFollowing: followsData };
   } catch (error) {
     console.error("error:", error.message);
     return { success: false, msg: error.message };
@@ -384,23 +391,188 @@ async function savePost(postId, userId, action) {
     return { success: false, msg: error.message };
   }
 }
-export async function getTest() {
+async function followUser(followsId, userId, action) {
+  if (!followsId || !userId || !action) return;
+  try {
+    if (action === FOLLOWS.notFollowing) {
+      const { error } = await supabase
+        .from(tableNames.follows)
+        .insert({ id: uuidV4(), followsId, userId });
+      if (error) {
+        console.error("error:", error);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from(tableNames.follows)
+        .delete()
+        .eq("userId", userId)
+        .eq("followsId", followsId);
+
+      if (error) {
+        console.error("error:", error);
+        return;
+      }
+    }
+
+    return { success: true, followsId };
+  } catch (error) {
+    console.error("error:", error.message);
+    return { success: false, msg: error.message };
+  }
+}
+
+async function getUserById(userId) {
+  if (!userId) return;
   try {
     const { data, error } = await supabase
-      .from(tableNames.posts)
+      .from(tableNames.users)
       .select(
-        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getSaved}`
-      );
+        `${SUPABASE_QUERY.users.getAllColumn},
+${SUPABASE_QUERY.users.getFollowers},${SUPABASE_QUERY.users.getFollowing}`
+      )
+      .eq("accountId", userId)
+      .single();
 
     if (error) {
       console.error("error:", error);
       return;
     }
+    const { data: posts, error: postsError } = await supabase
+      .from(tableNames.posts)
+      .select(
+        `${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getAllColumn}`
+      )
+      .order("updatedAt", { ascending: false })
+      .eq("creator", userId);
+
+    if (postsError) {
+      console.error("error:", postsError);
+      return;
+    }
+
+    data.posts = posts;
 
     return data;
   } catch (error) {
     console.error("error:", error.message);
     return { success: false, msg: error.message };
+  }
+}
+
+async function getLikedOrSavedPost(userId, ennaVennumUnnakku = "liked") {
+  // Fun fact: ennaVennumUnnakku(song from thug life movie(2025))
+  if (!userId || !ennaVennumUnnakku) {
+    return;
+  }
+  try {
+    const tableName =
+      ennaVennumUnnakku === "liked" ? tableNames.likes : tableNames.saves;
+    const query =
+      ennaVennumUnnakku === "liked"
+        ? `posts:likes_postId_fkey(*,creator:users!posts_creator_fkey(*))`
+        : `posts:saves_postId_fkey(*,creator:users!posts_creator_fkey(*))`;
+
+    const { data, error } = await supabase
+      .from(tableName)
+      .select(query)
+      .eq("userId", userId);
+    if (error) {
+      console.error("error:", error);
+      return;
+    }
+    const flatPost = data.map((p) => p.posts).reverse();
+
+    return flatPost;
+  } catch (error) {
+    console.error("error:", error.message);
+    return { success: false, msg: error.message };
+  }
+}
+
+async function updateUser(userObj) {
+  if (!userObj) {
+    return;
+  }
+  const insertRowData = {
+    name: userObj.name,
+    bio: userObj.bio,
+    username: userObj.username,
+    accountId: userObj.accountId,
+    email: userObj.email,
+    imageUrl: userObj.imageUrl,
+  };
+  try {
+    // NOTE: is profile picture also need to be upload?
+    if (userObj?.file !== null && userObj?.file?.length > 0) {
+      // file upload
+      const profilePictureUrl = await updateProfilePicture(
+        userObj.accountId,
+        userObj.file
+      );
+
+      insertRowData.imageUrl = profilePictureUrl;
+    }
+
+    const { error } = await supabase
+      .from(tableNames.users)
+      .upsert(insertRowData) //NOTE:insert+update=upsert
+      .eq("accountId", userObj.accountId);
+    if (error) {
+      console.error("error:", error);
+      return;
+    }
+
+    const { accountId, email, name, username, bio } = insertRowData;
+
+    return {
+      accountId,
+      email,
+      name,
+      username,
+      bio,
+      imageUrl: insertRowData?.imageUrl,
+    };
+  } catch (error) {
+    console.error("error:", error.message);
+    return { success: false, msg: error.message };
+  }
+}
+
+async function updateProfilePicture(userId, file) {
+  if (!userId || !file) {
+    return;
+  }
+  try {
+    const actualFile = file[0] || file;
+    const fileExt =
+      file[0]?.name?.split(".").pop() || file?.name?.split(".").pop() || "png";
+    const fileName = "profilePicture" + userId;
+    const filePath = `${userId}/${fileName}.${fileExt}`;
+
+    const { error: removeErr } = await supabase.storage
+      .from("media")
+      .remove([filePath]);
+    if (removeErr) {
+      console.warn("Ignore this warning");
+    }
+    // const { error } = await supabase.storage
+    //   .from("media")
+    //   .upload(filePath, actualFile);
+    // if (error) {
+    //   console.error("error:", error);
+    //   return;
+    // }
+
+    // const { data } = await supabase.storage
+    //   .from("media")
+    //   .getPublicUrl(filePath);
+    // if (!data) {
+    //   return;
+    // }
+    // return data.publicUrl;
+  } catch (error) {
+    console.error("error:", error);
   }
 }
 
@@ -416,122 +588,8 @@ export {
   deletePost,
   likePost,
   savePost,
+  followUser,
+  getUserById,
+  getLikedOrSavedPost,
+  updateUser,
 };
-
-// [
-//     {
-//         "tags": [
-//             "Post",
-//             "AI",
-//             "Art"
-//         ],
-//         "imageId": "4f6a84d1-6421-407a-a77c-45b7d0eda75e",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.png",
-//         "location": "USA",
-//         "caption": "Tom cruise",
-//         "likes": null,
-//         "creator": {
-//             "bio": null,
-//             "name": "aaa",
-//             "email": "aaa@gmail.com",
-//             "liked": null,
-//             "posts": null,
-//             "imageId": null,
-//             "imageUrl": "https://ui-avatars.com/api/?name=aaa&size=256&bold=true&length=1",
-//             "username": "aaa123",
-//             "accountId": "35e4b5ad-3333-4209-b0f3-697ee0ed6ce1"
-//         },
-//         "createdAt": "2025-08-06T07:45:07.793Z",
-//         "updatedAt": "2025-08-06T08:15:44.854Z"
-//     },
-//     {
-//         "tags": [
-//             "Logo",
-//             "blue",
-//             "tube"
-//         ],
-//         "imageId": "b92761bd-425f-46da-88ff-cdd76c5c57db",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.png",
-//         "location": "NYC",
-//         "caption": "Meta logo ",
-//         "likes": null,
-//         "creator": null,
-//         "createdAt": "2025-08-06T08:13:30.515Z",
-//         "updatedAt": "2025-08-06T08:13:30.515Z"
-//     },
-//     {
-//         "tags": [
-//             "Sun",
-//             "nature",
-//             "gift"
-//         ],
-//         "imageId": "c944030b-82ca-4369-9082-f45ca5420b30",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.jpg",
-//         "location": "World",
-//         "caption": "Feel the beauty of nature🎴",
-//         "likes": null,
-//         "creator": {
-//             "bio": null,
-//             "name": "aaa",
-//             "email": "aaa@gmail.com",
-//             "liked": null,
-//             "posts": null,
-//             "imageId": null,
-//             "imageUrl": "https://ui-avatars.com/api/?name=aaa&size=256&bold=true&length=1",
-//             "username": "aaa123",
-//             "accountId": "35e4b5ad-3333-4209-b0f3-697ee0ed6ce1"
-//         },
-//         "createdAt": "1754465489139",
-//         "updatedAt": "1754465489139"
-//     },
-//     {
-//         "tags": [
-//             "Action",
-//             "ancient",
-//             "modern"
-//         ],
-//         "imageId": "c4b90a5d-4105-4b74-aa89-14bfbca4ff83",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.jpg",
-//         "location": "USA",
-//         "caption": "Charlize Theron",
-//         "likes": null,
-//         "creator": {
-//             "bio": null,
-//             "name": "aaa",
-//             "email": "aaa@gmail.com",
-//             "liked": null,
-//             "posts": null,
-//             "imageId": null,
-//             "imageUrl": "https://ui-avatars.com/api/?name=aaa&size=256&bold=true&length=1",
-//             "username": "aaa123",
-//             "accountId": "35e4b5ad-3333-4209-b0f3-697ee0ed6ce1"
-//         },
-//         "createdAt": "1754465111310",
-//         "updatedAt": "1754465111310"
-//     },
-//     {
-//         "tags": [
-//             "Movie",
-//             "photo",
-//             "star"
-//         ],
-//         "imageId": "52c3e5c2-f2e0-45dd-a021-00b92560247b",
-//         "imageUrl": "https://<myProjectId>.supabase.co/storage/v1/object/public/media/fileName.jpg",
-//         "location": "USA",
-//         "caption": "Milla Jovovich",
-//         "likes": null,
-//         "creator": {
-//             "bio": null,
-//             "name": "aaa",
-//             "email": "aaa@gmail.com",
-//             "liked": null,
-//             "posts": null,
-//             "imageId": null,
-//             "imageUrl": "https://ui-avatars.com/api/?name=aaa&size=256&bold=true&length=1",
-//             "username": "aaa123",
-//             "accountId": "35e4b5ad-3333-4209-b0f3-697ee0ed6ce1"
-//         },
-//         "createdAt": "1754465039061",
-//         "updatedAt": "1754465039061"
-//     }
-// ]
