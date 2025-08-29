@@ -511,12 +511,14 @@ async function updateUser(userObj) {
         userObj.file
       );
 
-      insertRowData.imageUrl = profilePictureUrl;
+      if (profilePictureUrl) {
+        insertRowData.imageUrl = profilePictureUrl;
+      }
     }
 
     const { error } = await supabase
       .from(tableNames.users)
-      .upsert(insertRowData) //NOTE:insert+update=upsert
+      .upsert(insertRowData, { onConflict: "accountId" }) //NOTE:insert+update=upsert
       .eq("accountId", userObj.accountId);
     if (error) {
       console.error("error:", error);
@@ -544,33 +546,41 @@ async function updateProfilePicture(userId, file) {
     return;
   }
   try {
-    const actualFile = file[0] || file;
-    const fileExt =
-      file[0]?.name?.split(".").pop() || file?.name?.split(".").pop() || "png";
+    const actualFile = Array.isArray(file) ? file[0] : file;
+    const fileExt = actualFile.name.split(".").pop();
+
     const fileName = "profilePicture" + userId;
     const filePath = `${userId}/${fileName}.${fileExt}`;
+    const filePathArrToDel = [
+      `${userId}/${fileName}.png`,
+      `${userId}/${fileName}.jpg`,
+      `${userId}/${fileName}.jpeg`,
+    ];
 
     const { error: removeErr } = await supabase.storage
       .from("media")
-      .remove([filePath]);
+      .remove(filePathArrToDel);
     if (removeErr) {
-      console.warn("Ignore this warning");
+      console.log("No existing profilePicture found to delete.");
+    } else {
+      console.log("Old profilePicture deleted successfully.");
     }
-    // const { error } = await supabase.storage
-    //   .from("media")
-    //   .upload(filePath, actualFile);
-    // if (error) {
-    //   console.error("error:", error);
-    //   return;
-    // }
 
-    // const { data } = await supabase.storage
-    //   .from("media")
-    //   .getPublicUrl(filePath);
-    // if (!data) {
-    //   return;
-    // }
-    // return data.publicUrl;
+    const { error } = await supabase.storage
+      .from("media")
+      .upload(filePath, actualFile, { upsert: true });
+    if (error) {
+      console.error("error:", error);
+      return;
+    }
+
+    const { data } = await supabase.storage
+      .from("media")
+      .getPublicUrl(filePath);
+    if (!data) {
+      return;
+    }
+    return `${data?.publicUrl}?t=${Date.now()}`;
   } catch (error) {
     console.error("error:", error);
   }

@@ -50,7 +50,6 @@ const UpdateProfile = () => {
 
   // Handler
   const handleUpdate = async (value) => {
-    console.log("value:", value);
     const updatedUser = await updateUser({
       accountId: user.accountId,
       imageUrl: user.imageUrl,
@@ -63,7 +62,7 @@ const UpdateProfile = () => {
     }
 
     setUser(updatedUser);
-    return navigate(`/profile/${id}`);
+    // return navigate(`/profile/${id}`);
   };
 
   return (
@@ -130,7 +129,6 @@ const UpdateProfile = () => {
                       type="text"
                       className="shad-input bg-[#101012]"
                       {...field}
-                      disabled
                     />
                   </FormControl>
                   <FormMessage />

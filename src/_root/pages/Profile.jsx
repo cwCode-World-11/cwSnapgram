@@ -31,6 +31,8 @@ const Profile = () => {
   const { mutateAsync: followUser, isPending: isFollowingLoading } =
     useFollowUser();
 
+  const [imageUrl, setImageUrl] = useState("");
+
   const { pathname } = useLocation();
   const btnStyle = !hasFollowed
     ? "bg-[#877eff] hover:bg-[#202020] text-[#fff] flex gap-2 px-5"
@@ -46,6 +48,12 @@ const Profile = () => {
       setHasFollowed(false);
     }
   }, [getUser, currentUser?.accountId]);
+
+  useEffect(() => {
+    if (getUser) {
+      setImageUrl(getUser.imageUrl);
+    }
+  }, [getUser?.imageUrl]);
 
   const handleFollow = async (followsId) => {
     let action;
@@ -92,7 +100,7 @@ const Profile = () => {
       <div className="profile-inner_container">
         <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
           <img
-            src={getUser.imageUrl || "/assets/icons/profile-placeholder.svg"}
+            src={imageUrl || "/assets/icons/profile-placeholder.svg"}
             alt="profile"
             className="w-28 h-28 lg:h-36 lg:w-36 rounded-full object-cover"
           />

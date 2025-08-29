@@ -151,18 +151,12 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userObj) => updateUser(userObj),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_FILE_PREVIEW],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_USERS],
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.accountId],
       });
     },
   });
@@ -242,7 +236,12 @@ export const useGetUserPosts = (userId) => {
 };
 export const useGetUserById = (userId) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_USER_BY_ID, userId],
+    queryKey: [
+      QUERY_KEYS.GET_USER_BY_ID,
+      userId,
+      QUERY_KEYS.GET_USERS,
+      QUERY_KEYS.GET_CURRENT_USER,
+    ],
     queryFn: () => getUserById(userId),
     enabled: !!userId,
   });
