@@ -20,6 +20,7 @@ import {
   followUser,
   getLikedOrSavedPost,
   updateUser,
+  searchPosts,
 } from "../../supabase/database";
 import { QUERY_KEYS } from "../constants";
 
@@ -66,7 +67,7 @@ export const useUpdatePost = () => {
 export const useDeletePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ imageId }) => deletePost(imageId),
+    mutationFn: ({ imageId, imgUrl }) => deletePost(imageId, imgUrl),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
@@ -251,5 +252,13 @@ export const useGetLikedOrSavedPost = (userId, ennaVennumUnnakku) => {
     queryKey: [userId, ennaVennumUnnakku],
     queryFn: () => getLikedOrSavedPost(userId, ennaVennumUnnakku),
     enabled: !!userId,
+  });
+};
+
+export const useSearchPosts = (searchTerm) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
+    queryFn: () => searchPosts(searchTerm),
+    enabled: !!searchTerm,
   });
 };

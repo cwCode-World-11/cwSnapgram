@@ -79,7 +79,7 @@ const PostStats = ({ post, userId }) => {
             onClick={(e) => handleLikePost(e)}
             className="cursor-pointer"
           />
-          <p className="small-medium lg:base-medium">{likes.length}</p>
+          <p className="small-medium lg:base-medium">{likes?.length}</p>
         </div>
       )}
 

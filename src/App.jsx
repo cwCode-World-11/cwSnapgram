@@ -16,7 +16,7 @@ import {
   UpdateProfile,
 } from "@/_root/pages";
 
-// TODO: Comment, forgetPassword,remove dummy data in constant
+// TODO: Comment, forgetPassword,search user,view followers and following.
 
 function App() {
   return (

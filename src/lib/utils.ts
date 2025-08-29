@@ -81,6 +81,9 @@ export function formatInstagramTime(timestamp: number): string {
 //   return likeList.includes(userId);
 // };
 export const checkIsLiked = (likeList: any[], userId: string) => {
+  if (likeList?.length===0) {
+    return;
+  }
   return likeList.find(u=>{
     if(u.user.accountId===userId){
       return true;
@@ -88,6 +91,9 @@ export const checkIsLiked = (likeList: any[], userId: string) => {
     })
 };
 export const checkIsSaved = (savedList: any[], userId: string) => {
+  if (savedList?.length===0) {
+    return;
+  }
   return savedList.find(u=>{
     if(u.user.accountId===userId){
       return true;

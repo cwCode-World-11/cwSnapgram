@@ -62,7 +62,7 @@ const UpdateProfile = () => {
     }
 
     setUser(updatedUser);
-    // return navigate(`/profile/${id}`);
+    return navigate(`/profile/${id}`);
   };
 
   return (

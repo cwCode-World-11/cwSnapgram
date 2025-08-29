@@ -166,7 +166,6 @@ async function getInfinitePosts(pageParam) {
   }
 }
 
-// TODO: except myself and followers
 async function getUsers(userId) {
   if (!userId) {
     return;
@@ -314,9 +313,13 @@ async function getUserPosts(userId) {
   }
 }
 
-async function deletePost(imageId) {
-  if (!imageId) return;
+async function deletePost(imageId, imgUrl) {
+  if (!imageId || !imgUrl) return;
   try {
+    const deletedImg = await deleteFileFromStorage(imgUrl);
+    if (!deletedImg) {
+      return;
+    }
     const { error } = await supabase
       .from(tableNames.posts)
       .delete()
@@ -324,10 +327,12 @@ async function deletePost(imageId) {
 
     if (error) {
       console.error("error:", error);
-      throw new Error("Error");
+      return;
     }
+
+    return true;
   } catch (error) {
-    console.error("error:", error.message);
+    console.error("error:", error);
     return { success: false, msg: error.message };
   }
 }
@@ -586,6 +591,61 @@ async function updateProfilePicture(userId, file) {
   }
 }
 
+async function deleteFileFromStorage(imgUrl) {
+  if (!imgUrl) {
+    return;
+  }
+  // Strip query params if present
+  const cleanUrl = imgUrl.split("?")[0];
+
+  // Split into parts
+  const parts = cleanUrl.split("/");
+
+  // userId = 2nd last part, fileName = last part
+  const userId = parts[parts.length - 2];
+  const fileName = parts[parts.length - 1];
+
+  // Extract extension (after last ".")
+  // const fileExt = fileName.includes(".") ? fileName.split(".").pop() : null;
+
+  try {
+    const filePath = `${userId}/${fileName}`;
+    console.log("filePath:", filePath);
+    const { error } = await supabase.storage.from("media").remove([filePath]);
+    if (error) {
+      console.log("error:", error);
+      return;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("error:", error);
+  }
+}
+
+async function searchPosts(searchTerm) {
+  if (!searchTerm) {
+    return;
+  }
+
+  try {
+    const { error, data } = await supabase
+      .from(tableNames.posts)
+      .select(
+        `*,${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getUsers}`
+      )
+      .ilike("caption", `%${searchTerm}%`);
+    if (error) {
+      console.log("error:", error);
+      return;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("error:", error);
+  }
+}
+
 export {
   saveUserToDB,
   getCurrentUser,
@@ -602,4 +662,5 @@ export {
   getUserById,
   getLikedOrSavedPost,
   updateUser,
+  searchPosts,
 };

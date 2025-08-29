@@ -1,7 +1,9 @@
 import { Input } from "../../components/ui/input";
 import Loader from "../../components/Loader";
 import GridPostList from "../../components/GridPostList";
-import { dummyPosts as searchedPosts } from "../../lib/constants";
+import { useGetPosts, useSearchPosts } from "../../lib/tanstackQuery/queries";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
 
 const SearchResults = ({ isSearchFetching, searchedPosts }) => {
   if (isSearchFetching) {
@@ -16,15 +18,56 @@ const SearchResults = ({ isSearchFetching, searchedPosts }) => {
 };
 
 const Explore = () => {
-  const isSearchFetching = false,
-    shouldShowSearchResults = true,
-    shouldShowPosts = true;
-  if (!searchedPosts)
+  const { ref, inView } = useInView();
+  const [searchValue, setSearchValue] = useState("");
+  const {
+    data,
+    isPending: isPostLoading,
+    isError: isErrorPosts,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useGetPosts();
+  const posts = data?.pages.flatMap((page) => page.data) ?? [];
+
+  const { data: searchedPosts, isPending: isSearchFetching } =
+    useSearchPosts(searchValue);
+
+  const shouldShowSearchResults = searchValue !== "",
+    shouldShowPosts = !shouldShowSearchResults && posts?.length === 0;
+
+  // if (!searchValue&&!searchedPosts)
+  //   return (
+  //     <div className="flex-center w-full h-full">
+  //       <Loader />
+  //     </div>
+  //   );
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
+
+  if (isErrorPosts) {
+    return (
+      <div className="flex flex-1 custom-scrollbar">
+        <div className="home-container custom-scrollbar">
+          <p className="body-medium text-light-1">Something bad happened</p>
+        </div>
+        <div className="home-creators custom-scrollbar">
+          <p className="body-medium text-light-1">Something bad happened</p>
+        </div>
+      </div>
+    );
+  }
+  if (!posts) {
     return (
       <div className="flex-center w-full h-full">
         <Loader />
       </div>
     );
+  }
 
   return (
     <div className="explore-container custom-scrollbar">
@@ -41,11 +84,11 @@ const Explore = () => {
             type="text"
             placeholder="Search"
             className="explore-search"
-            //TODO: value={searchValue}
-            // onChange={(e) => {
-            //   const { value } = e.target;
-            //   setSearchValue(value);
-            // }}
+            value={searchValue}
+            onChange={(e) => {
+              const { value } = e.target;
+              setSearchValue(value);
+            }}
           />
         </div>
       </div>
@@ -73,17 +116,23 @@ const Explore = () => {
         ) : shouldShowPosts ? (
           <p className="text-light-4 mt-10 text-center w-full ">End of posts</p>
         ) : (
-          posts.pages.map((item, index) => (
-            <GridPostList key={`page-${index}`} posts={item} />
-          ))
+          // posts?.map((item, index) => (
+          //   <GridPostList key={`page-${index}`} posts={item} />
+          // ))
+          <GridPostList posts={posts} />
+        )}
+        {posts.length > 0 && !hasNextPage && (
+          <div className="w-full flex-center py-4 text-[#a2a2a2]">
+            End of your scrolling — let’s get back to your work 😏
+          </div>
         )}
       </div>
 
-      {/*TODO: {hasNextPage && !searchValue && (
+      {hasNextPage && !searchValue && (
         <div ref={ref} className="mt-10">
-          <Loader />
+          {isFetchingNextPage && <Loader />}
         </div>
-      )} */}
+      )}
     </div>
   );
 };

@@ -30,13 +30,18 @@ const PostDetails = () => {
 
   const handleDeletePost = async () => {
     try {
-      await deletePost({ imageId: postArr?.[0].imageId });
+      const postDeleted = await deletePost({
+        imageId: postArr?.[0].imageId,
+        imgUrl: postArr?.[0]?.imageUrl,
+      });
       if (isDeletePostLoading) toast("Deleting...");
+      if (postDeleted) {
+        toast.success("Post was deleted!!");
+      }
     } catch (error) {
       console.error("error:", error);
       toast.error("Error while deleting");
     } finally {
-      toast.success("Post was deleted!!");
       navigate(-1);
     }
   };
