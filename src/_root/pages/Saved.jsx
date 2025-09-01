@@ -1,6 +1,5 @@
 import Loader from "../../components/Loader";
 import GridPostList from "../../components/GridPostList";
-import { dummyPosts as savePosts } from "../../lib/constants";
 import { useGetLikedOrSavedPost } from "../../lib/tanstackQuery/queries";
 import { useAuth } from "../../context/AuthContext";
 

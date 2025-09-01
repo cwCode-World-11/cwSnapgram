@@ -32,7 +32,6 @@ const PostCard = ({ post }) => {
             </p>
             <div className="flex-center gap-2 text-light-3">
               <p className="subtle-semibold lg:small-regular ">
-                {/* TODO: update time - it always showing "Just now" */}
                 {formatInstagramTime(post.updatedAt)}
               </p>
               •

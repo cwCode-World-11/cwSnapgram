@@ -646,6 +646,89 @@ async function searchPosts(searchTerm) {
   }
 }
 
+async function getFollowingAndFollowers(userId) {
+  // NOTE: following,followers,search
+  if (!userId) {
+    return;
+  }
+  try {
+    const followers = await fetchRelation(
+      "followers",
+      "followsId",
+      "follows_userId_fkey",
+      userId
+    );
+
+    const following = await fetchRelation(
+      "following",
+      "userId",
+      "follows_followsId_fkey",
+      userId
+    );
+
+    // console.log("d:", [...followers, ...following]);
+
+    return [...followers, ...following];
+  } catch (error) {
+    console.error("Error getting users" + error);
+  }
+}
+
+async function fetchRelation(relation, column, fkey, userId) {
+  try {
+    const { data, error } = await supabase
+      .from(tableNames.follows)
+      .select(`${relation}:users!${fkey}(*)`)
+      .eq(column, userId);
+
+    if (error) {
+      console.error(`Error fetching ${relation}:`, error);
+      return [];
+    }
+
+    return data.map((list) => ({
+      ...list[relation],
+      type: relation,
+    }));
+  } catch (error) {
+    console.error("error:", error);
+  }
+}
+
+async function getSearchUser(userId, searchTearm) {
+  if (!searchTearm || !userId) {
+    return;
+  }
+  // NOTE: columnName.ilike.%${searchTearm}%=name.ilike.%${searchTearm}%,
+  // NOTE: ilike=inCaseSensitive, %=whereToStart
+  try {
+    const { data, error } = await supabase
+      .from(tableNames.users)
+      .select("*")
+      .or(
+        `name.ilike.%${searchTearm}%,username.ilike.%${searchTearm}%,accountId.ilike.%${searchTearm}%`
+      )
+      .neq("accountId", userId);
+    if (error) {
+      console.error("error:", error);
+      return false;
+    }
+
+    const { data: followsData, error: followsError } = await supabase
+      .from(tableNames.follows)
+      .select("*")
+      .eq("userId", userId);
+    if (followsError) {
+      console.error("error:", followsError);
+      return false;
+    }
+
+    return { data, following: followsData.map((f) => f.followsId) };
+  } catch (error) {
+    console.error("error:", error);
+  }
+}
+
 export {
   saveUserToDB,
   getCurrentUser,
@@ -663,4 +746,6 @@ export {
   getLikedOrSavedPost,
   updateUser,
   searchPosts,
+  getFollowingAndFollowers,
+  getSearchUser,
 };

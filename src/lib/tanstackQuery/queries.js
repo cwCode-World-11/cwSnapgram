@@ -21,6 +21,8 @@ import {
   getLikedOrSavedPost,
   updateUser,
   searchPosts,
+  getFollowingAndFollowers,
+  getSearchUser,
 } from "../../supabase/database";
 import { QUERY_KEYS } from "../constants";
 
@@ -260,5 +262,25 @@ export const useSearchPosts = (searchTerm) => {
     queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
     queryFn: () => searchPosts(searchTerm),
     enabled: !!searchTerm,
+  });
+};
+
+export const useGetFollowingAndFollowers = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId }) => getFollowingAndFollowers(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.getFollowers],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.getFollowing],
+      });
+    },
+  });
+};
+export const useGetSearchUser = () => {
+  return useMutation({
+    mutationFn: ({ userId, searchTerm }) => getSearchUser(userId, searchTerm),
   });
 };

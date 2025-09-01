@@ -68,6 +68,10 @@ export const QUERY_KEYS = {
 
   //  SEARCH KEYS
   SEARCH_POSTS: "getSearchPosts",
+
+  // Follows
+  getFollowers: "getFollowers",
+  getFollowing: "getFollowing",
 };
 
 export const tableNames = {

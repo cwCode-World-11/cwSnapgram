@@ -42,5 +42,18 @@ async function logOut() {
     return { success: false, msg: error.message };
   }
 }
+async function forgetPassword() {
+  /////////////////////////////////////////////////////////////////////////////////////////////
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("error:", error);
+      return { success: false, msg: error.message };
+    }
+  } catch (error) {
+    console.error("error:", error);
+    return { success: false, msg: error.message };
+  }
+}
 
-export { signUp, login, logOut };
+export { signUp, login, logOut, forgetPassword };

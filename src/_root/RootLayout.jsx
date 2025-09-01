@@ -5,11 +5,12 @@ import Bottombar from "../components/Bottombar";
 
 const RootLayout = () => {
   return (
-    <main className="w-full h-screen md:flex">
+    <main className="w-full md:flex">
       <Topbar />
       <LeftSidebar />
 
-      <section className="flex flex-1 h-full md:h-[100vh]">
+      {/* <section className="flex flex-1 md:h-[100vh]"> */}
+      <section className="flex flex-1 h-full">
         <Outlet />
       </section>
 

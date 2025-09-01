@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router";
 import AuthLayout from "./_auth/AuthLayout";
 import Login from "./_auth/forms/Login";
 import Signup from "./_auth/forms/Signup";
+import ForgetPassword from "./_auth/forms/ForgetPassword";
 import RootLayout from "./_root/RootLayout";
 import { Toaster } from "react-hot-toast";
 import {
@@ -16,7 +17,7 @@ import {
   UpdateProfile,
 } from "@/_root/pages";
 
-// TODO: Comment, forgetPassword,search user,view followers and following.
+// TODO: Comment, forgetPassword.
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/sign-up" element={<Signup />} />
+          <Route path="/forget-password" element={<ForgetPassword />} />
         </Route>
 
         {/* Private Routes */}

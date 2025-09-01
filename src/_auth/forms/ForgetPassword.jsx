@@ -20,7 +20,7 @@ import { login } from "../../supabase/auth";
 import { getCurrentUser } from "../../supabase/database";
 import { useAuth } from "../../context/AuthContext";
 
-const Login = () => {
+const ForgetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { setUser } = useAuth();
@@ -29,7 +29,6 @@ const Login = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
@@ -59,9 +58,9 @@ const Login = () => {
       <div className="flex-center w-40">
         <img src={cLogo} alt="logo" />
       </div>
-      <h1 className="text-2xl mt-5 ">Login in to your account</h1>
+      <h1 className="text-2xl mt-5 ">Forget Password</h1>
       <p className="text-light-3 small-medium md:base-regular m-2">
-        Welcome back!, Please enter your details
+        Please enter your email
       </p>
       <form
         onSubmit={form.handleSubmit(onLogin)}
@@ -86,25 +85,6 @@ const Login = () => {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem className="w-[50%]">
-              <FormLabel className="shad-form_label text-light-2 text-xs">
-                Password
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  className="shad-input bg-[#1f1f22] h-10"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <Button
           type="submit"
           className="shad-button_primary w-[50%]"
@@ -115,25 +95,17 @@ const Login = () => {
               <Loader /> Loading...
             </div>
           ) : (
-            "Login"
+            "Forget Password"
           )}
         </Button>
 
         <p className="text-small-regular text-light-2 text-center mt-2">
-          Don't have an account?
+          Already have an account?
           <Link
-            to="/sign-up"
+            to="/login"
             className="text-primary-500 text-small-semibold ml-1 "
           >
-            Sign Up
-          </Link>
-        </p>
-        <p className="text-small-regular text-light-2 text-center">
-          <Link
-            to="/forget-password"
-            className="text-primary-500 text-small-semibold ml-1 "
-          >
-            Forget password
+            Login
           </Link>
         </p>
       </form>
@@ -141,4 +113,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ForgetPassword;

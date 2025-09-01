@@ -7,13 +7,11 @@ import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { FOLLOWS } from "../lib/constants";
 
-const UserCard = ({ user }) => {
-  // TODO: NOT FOLLOWING AND CREATOR
-
+const UserCard = ({ user, isFollowing = false }) => {
   const { user: currentUser } = useAuth();
   const { mutateAsync: followUser, isPending: isFollowingLoading } =
     useFollowUser();
-  const [hasFollowed, setHasFollowed] = useState();
+  const [hasFollowed, setHasFollowed] = useState(isFollowing);
 
   // useEffect(() => {}, [isFollowingLoading]);
 
