@@ -217,6 +217,7 @@ export const useGetUsers = (userId) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_USERS, userId],
     queryFn: () => getUsers(userId),
+    enabled: !!userId, // 🔑 this prevents running until accountId exists
   });
 };
 

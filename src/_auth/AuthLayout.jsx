@@ -1,15 +1,30 @@
 import { Outlet } from "react-router";
-import { Navigate } from "react-router";
+import { Navigate, useLocation } from "react-router";
 import photo from "/assets/authDisplay.jpg";
 import { useAuth } from "../context/AuthContext";
 
 const AuthLayout = () => {
   const { user } = useAuth();
+  const { pathname } = useLocation();
+
   const isAuthenticated = user && true;
+
+  // The login, sign-up, and forget password pages should be accessible
+  // when the user is NOT authenticated.
+  // The update-user page should be accessible when the user IS authenticated
+  // and in a recovery flow.
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname === "/sign-up" ||
+    pathname === "/forget-password";
+  const isUpdateUserPage = pathname === "/update-user";
+
+  // Logic to determine if we should redirect
+  const shouldRedirect = isAuthenticated && isAuthPage;
 
   return (
     <>
-      {isAuthenticated ? (
+      {shouldRedirect ? (
         <Navigate to="/" />
       ) : (
         <section className="flex items-center justify-center">

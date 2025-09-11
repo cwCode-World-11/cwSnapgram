@@ -18,9 +18,9 @@ const LeftSidebar = () => {
   //   }
   // }, []);
 
-  if (!isAuthLoading && !user) {
+  if (!user) {
     return (
-      <div className="lg:flex items-center justify-center w-screen h-screen">
+      <div className="w-screen h-screen flex-center items-center">
         user not found!!!
         <p>reload the page</p>
       </div>
@@ -30,10 +30,12 @@ const LeftSidebar = () => {
   const handleSignOut = async (e) => {
     e.preventDefault();
     try {
-      await logOut();
-      setCurrentUser(null);
-      setUser(null);
-      navigate("/login");
+      const l = await logOut();
+      if (l) {
+        setCurrentUser(null);
+        setUser(null);
+        navigate("/login");
+      }
       toast.success("You were logged out");
     } catch (error) {
       console.log("error:", error);

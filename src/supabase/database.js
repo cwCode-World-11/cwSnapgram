@@ -48,20 +48,31 @@ async function saveUserToDB(insertObj) {
 
 async function getCurrentUser() {
   try {
-    const d = await supabase.auth.getSession();
-    if (d) {
-      const { data: dataObj, error } = await supabase
-        .from(tableNames.users)
-        .select("*")
-        .eq("accountId", d.data.session.user.id);
-      if (error) {
-        console.error("error:", error);
-        return [];
-      }
-      return { success: true, data: dataObj[0] };
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("Session error:", error.message);
+      return { success: false, msg: error.message };
     }
+
+    const session = data?.session;
+    if (!session?.user) {
+      return { success: false, msg: "No active session" };
+    }
+
+    const { data: dataObj, error: dbError } = await supabase
+      .from(tableNames.users)
+      .select("*")
+      .eq("accountId", session.user.id)
+      .single(); // get just one row
+
+    if (dbError) {
+      console.error("DB error:", dbError.message);
+      return { success: false, msg: dbError.message };
+    }
+
+    return { success: true, data: dataObj };
   } catch (error) {
-    console.error("error:", error.message);
+    console.error("Unexpected error:", error.message);
     return { success: false, msg: error.message };
   }
 }

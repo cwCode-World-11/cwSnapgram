@@ -31,6 +31,15 @@ export const ProfileValidation = z.object({
   bio: z.string(),
 });
 
+export const ForgetPasswordValidation = z.object({
+  email: z.string().email(),
+});
+export const UpdatePasswordValidation = z.object({
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters." }),
+});
+
 // ============================================================
 // POST
 // ============================================================

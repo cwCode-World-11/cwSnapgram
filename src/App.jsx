@@ -3,6 +3,7 @@ import AuthLayout from "./_auth/AuthLayout";
 import Login from "./_auth/forms/Login";
 import Signup from "./_auth/forms/Signup";
 import ForgetPassword from "./_auth/forms/ForgetPassword";
+import UpdateUser from "./_auth/forms/UpdateUser";
 import RootLayout from "./_root/RootLayout";
 import { Toaster } from "react-hot-toast";
 import {
@@ -17,7 +18,8 @@ import {
   UpdateProfile,
 } from "@/_root/pages";
 
-// TODO: Comment, forgetPassword.
+// TODO: Comment, forgetPassword, account delete
+// TODO: don't forget to change redirect url on supabase(localhost by default) for forgetPassword while deploying
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/sign-up" element={<Signup />} />
           <Route path="/forget-password" element={<ForgetPassword />} />
+          <Route path="/update-user" element={<UpdateUser />} />
         </Route>
 
         {/* Private Routes */}
