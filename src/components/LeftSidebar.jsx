@@ -1,11 +1,15 @@
-import { Link, NavLink, useLocation, useNavigate } from "react-router";
+import {
+  Link,
+  Navigate,
+  NavLink,
+  useLocation,
+  useNavigate,
+} from "react-router";
 import { Button } from "./ui/button";
 import { sidebarLinks } from "../lib/constants";
 import { logOut } from "../supabase/auth";
 import { useAuth } from "../context/AuthContext";
-import Loader from "../components/Loader";
 import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
 
 const LeftSidebar = () => {
   const { user, setUser, setCurrentUser, isAuthLoading } = useAuth();
@@ -18,13 +22,19 @@ const LeftSidebar = () => {
   //   }
   // }, []);
 
-  if (!user) {
+  if (!isAuthLoading && !user) {
     return (
-      <div className="w-screen h-screen flex-center items-center">
-        user not found!!!
-        <p>reload the page</p>
-      </div>
+      <>
+        <p>Leftsidebar no user and no auth loading so navigating to login</p>
+        <Navigate to="/login" />
+      </>
     );
+    // return (
+    //   <div className="w-screen h-screen flex-center items-center">
+    //     user not found!!!
+    //     <p>reload the page</p>
+    //   </div>
+    // );
   }
 
   const handleSignOut = async (e) => {

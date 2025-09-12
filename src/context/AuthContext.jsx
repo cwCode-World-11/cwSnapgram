@@ -1,11 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import Loader from "../components/Loader";
 import supabase from "../supabase/config";
 import { useNavigate, useLocation } from "react-router";
 import { getCurrentUser } from "../supabase/database"; // Custom function to fetch user data
-import toast from "react-hot-toast";
 
-const AuthContext = React.createContext();
+const AuthContext = createContext();
 
 const useAuth = () => useContext(AuthContext);
 
@@ -53,6 +52,14 @@ const AuthProvider = ({ children }) => {
 
     checkUserSession(); // Run check when the component mounts
   }, []);
+
+  useEffect(() => {
+    if (!["/login", "/sign-up", "/forget-password"].includes(pathname)) {
+      if (!isAuthLoading && !currentUser && !user) {
+        navigate("/login");
+      }
+    }
+  }, [pathname, currentUser, user]);
 
   // useEffect(() => {
   //   let mounted = true;

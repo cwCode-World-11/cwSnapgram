@@ -1,6 +1,13 @@
+import { useEffect } from "react";
 import { Button } from "./ui/button";
 
 const Modal = ({ isOpen, setIsOpen, title, children, showCloseBtn = true }) => {
+  useEffect(() => {
+    if (isOpen) {
+      window.scrollTo(0, 0);
+    }
+  }, [isOpen]);
+
   return (
     isOpen && (
       <section className="bg-[#0e0e0eba] w-[100%] absolute z-100 flex-center top-[50%] left-[50%] translate-[-50%] md:w-[100%] h-screen">

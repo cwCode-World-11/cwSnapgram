@@ -49,7 +49,7 @@ async function forgetPasswordSendResetLinkOnEmail(email) {
   if (!email) return;
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "http://localhost:5173/update-user?action=reset",
+      redirectTo: `${window.location.origin}/update-user?action=reset`,
     });
     if (error) {
       console.error("error:", error);

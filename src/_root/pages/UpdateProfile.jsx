@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router";
+import { toast } from "react-hot-toast";
 
 import {
   Form,
@@ -10,7 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import toast from "react-hot-toast";
 import Loader from "../../components/Loader";
 import ProfileUploader from "../../components/ProfileUploader";
 import { Input } from "../../components/ui/input";
@@ -20,29 +20,43 @@ import { useAuth } from "../../context/AuthContext";
 import { ProfileValidation } from "../../lib/validation";
 import { useUpdateUser } from "../../lib/tanstackQuery/queries";
 import Modal from "../../components/Modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const UpdateProfile = () => {
   const { id } = useParams();
-  const { user, setUser } = useAuth();
+  const { user, setUser, setCurrentUser, isAuthLoading } = useAuth();
   const navigate = useNavigate();
   const { mutateAsync: updateUser, isPending: isLoadingUpdate } =
     useUpdateUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const session = JSON.parse(
+    localStorage.getItem(
+      `sb-${import.meta.env.VITE_SUPABASE_PROJECT_ID}-auth-token`
+    )
+  );
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(ProfileValidation),
     defaultValues: {
       file: [],
-      name: user.name,
-      username: user.username,
-      email: user.email,
-      bio: user.bio || "",
+      name: user?.name,
+      username: user?.username,
+      email: user?.email,
+      bio: user?.bio || "",
     },
   });
 
   // Queries
   const currentUser = user;
+
+  useEffect(() => {
+    if (!isAuthLoading && !session) {
+      toast("No session found!!!. navigating to login.");
+      navigate("/login");
+      return;
+    }
+  }, [session, isAuthLoading]);
 
   if (!currentUser)
     return (
@@ -70,23 +84,38 @@ const UpdateProfile = () => {
 
   const handleDeleteAccountAndPosts = async () => {
     try {
+      setIsDeleteLoading(true);
+      const loadingID = toast.loading(
+        "Deleting your account and all of your post..."
+      );
       // NOTE: this is edge function i coded on supabase edge function editor tab
       const res = await fetch(
         `https://${
           import.meta.env.VITE_SUPABASE_PROJECT_ID
-        }.functions.supabase.co/Delete-User`,
+        }.supabase.co/functions/v1/Delete-User`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
           body: JSON.stringify({ userId: id }),
         }
       );
-      if (!res.deleted) {
+      if (!res.ok) {
         toast.error("Failed to delete user and other posts");
         return;
       }
-
-      console.log("res:", res);
+      setIsDeleteLoading(false);
+      navigate("/login");
+      localStorage.removeItem(
+        `sb-${import.meta.env.VITE_SUPABASE_PROJECT_ID}-auth-token`
+      );
+      setIsModalOpen(false);
+      setCurrentUser(null);
+      setUser(null);
+      toast.dismiss(loadingID);
+      toast.success("Account and all of your was successfully deleted.");
     } catch (error) {
       console.error("error:", error);
       toast.error("Can't delete your account!!!");
@@ -114,7 +143,13 @@ const UpdateProfile = () => {
             className="shad-button_dark_4 bg-black text-red-500 border-red-500 border-1 cursor-pointer"
             onClick={handleDeleteAccountAndPosts}
           >
-            Delete account and posts
+            {isDeleteLoading ? (
+              <>
+                <Loader /> Deleting...
+              </>
+            ) : (
+              "Delete account and posts"
+            )}
           </Button>
         </div>
       </Modal>

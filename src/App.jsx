@@ -18,8 +18,8 @@ import {
   UpdateProfile,
 } from "@/_root/pages";
 
-// TODO: Comment, forgetPassword, account delete
-// TODO: don't forget to change redirect url on supabase(localhost by default) for forgetPassword while deploying
+// TODO: Comment
+// TODO: don't forget to change redirect url on supabase(localhost by default) for forgetPassword while deploying no need to hard code on react.
 
 function App() {
   return (

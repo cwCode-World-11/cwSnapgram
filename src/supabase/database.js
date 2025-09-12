@@ -62,7 +62,7 @@ async function getCurrentUser() {
     const { data: dataObj, error: dbError } = await supabase
       .from(tableNames.users)
       .select("*")
-      .eq("accountId", session.user.id)
+      .eq("accountId", session?.user?.id)
       .single(); // get just one row
 
     if (dbError) {
