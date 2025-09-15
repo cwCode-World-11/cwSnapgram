@@ -1,3 +1,4 @@
+import { QUERY_KEYS } from "../constants";
 import {
   useInfiniteQuery,
   useMutation,
@@ -23,8 +24,9 @@ import {
   searchPosts,
   getFollowingAndFollowers,
   getSearchUser,
+  comments,
+  handleComment,
 } from "../../supabase/database";
-import { QUERY_KEYS } from "../constants";
 
 // Post Method
 export const useSaveUserToDB = () => {
@@ -283,5 +285,36 @@ export const useGetFollowingAndFollowers = () => {
 export const useGetSearchUser = () => {
   return useMutation({
     mutationFn: ({ userId, searchTerm }) => getSearchUser(userId, searchTerm),
+  });
+};
+
+export const useCommentRead = (postId) => {
+  return useQuery({
+    queryKey: [
+      QUERY_KEYS.GET_POSTS,
+      QUERY_KEYS.GET_POST_BY_ID,
+      QUERY_KEYS.GET_USER_POSTS,
+      QUERY_KEYS.GET_INFINITE_POSTS,
+    ],
+    queryFn: () => comments(postId),
+    enabled: !!postId,
+  });
+};
+
+export const useHandleComment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cmtObj) => handleComment(cmtObj),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          QUERY_KEYS.GET_POSTS,
+          QUERY_KEYS.GET_POST_BY_ID,
+          QUERY_KEYS.GET_USER_POSTS,
+          QUERY_KEYS.GET_INFINITE_POSTS,
+        ],
+      });
+    },
   });
 };

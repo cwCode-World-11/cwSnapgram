@@ -55,12 +55,15 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!["/login", "/sign-up", "/forget-password"].includes(pathname)) {
-      if (!isAuthLoading && !currentUser && !user) {
-        navigate("/login");
+      if (!isAuthLoading) {
+        if (!currentUser && !user) {
+          navigate("/login");
+        }
       }
     }
   }, [pathname, currentUser, user]);
 
+  // NOTE: don't delete this
   // useEffect(() => {
   //   let mounted = true;
   //   let unsubscribeFn = null;

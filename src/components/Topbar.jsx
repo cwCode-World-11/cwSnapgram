@@ -6,11 +6,16 @@ import { useAuth } from "../context/AuthContext";
 import { logOut } from "../supabase/auth";
 
 const Topbar = () => {
-  const { user, setUser, setCurrentUser } = useAuth();
+  const { user, setUser, setCurrentUser, isAuthLoading } = useAuth();
   const navigate = useNavigate();
 
-  if (!user) {
-    return "loading...";
+  if (!isAuthLoading && !user) {
+    return (
+      <>
+        <p>Topbar no user and no auth loading so navigating to login</p>
+        <Navigate to="/login" />
+      </>
+    );
   }
 
   const handleSignOut = async (e) => {

@@ -80,6 +80,7 @@ export const tableNames = {
   likes: "likes",
   saves: "saves",
   follows: "follows",
+  comments: "comments",
 };
 
 export const PAGE_SIZE = 5;
@@ -98,6 +99,7 @@ export const SUPABASE_QUERY = {
     getLiked: "liked:likes!likes_postId_fkey(user:users!likes_userId_fkey(*))",
     getUsers: "creator:users!posts_creator_fkey(*)",
     getSaved: "saved:saves!saves_postId_fkey(user:users!saves_userId_fkey(*))",
+    getComments: "comments:comments!comments_postId_fkey(*)",
   },
 };
 
@@ -112,4 +114,9 @@ export const SAVES = {
 export const FOLLOWS = {
   follow: "follow",
   notFollowing: "notFollowing",
+};
+export const COMMENTS = {
+  edit: "editing",
+  comment: "commenting",
+  deleteComment: "deleting",
 };

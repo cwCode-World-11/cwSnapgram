@@ -1,5 +1,6 @@
 import supabase from "./config";
 import {
+  COMMENTS,
   FOLLOWS,
   LIKES,
   PAGE_SIZE,
@@ -160,7 +161,7 @@ async function getInfinitePosts(pageParam) {
     const { data, error } = await supabase
       .from(tableNames.posts)
       .select(
-        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved}`
+        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getComments}`
       )
       .order("updatedAt", { ascending: false })
       .range(from, to);
@@ -217,7 +218,7 @@ async function getPostById(postId) {
     const { data, error } = await supabase
       .from(tableNames.posts)
       .select(
-        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved}`
+        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getComments}`
       )
       .eq("imageId", postId);
     if (error) {
@@ -307,7 +308,7 @@ async function getUserPosts(userId) {
     const { data, error } = await supabase
       .from(tableNames.posts)
       .select(
-        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved}`
+        `${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getComments}`
       )
       .order("updatedAt", { ascending: false })
       .eq("creator", userId);
@@ -457,7 +458,7 @@ ${SUPABASE_QUERY.users.getFollowers},${SUPABASE_QUERY.users.getFollowing}`
     const { data: posts, error: postsError } = await supabase
       .from(tableNames.posts)
       .select(
-        `${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getAllColumn}`
+        `${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getAllColumn},${SUPABASE_QUERY.posts.getComments}`
       )
       .order("updatedAt", { ascending: false })
       .eq("creator", userId);
@@ -643,7 +644,7 @@ async function searchPosts(searchTerm) {
     const { error, data } = await supabase
       .from(tableNames.posts)
       .select(
-        `*,${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getUsers}`
+        `*,${SUPABASE_QUERY.posts.getLiked},${SUPABASE_QUERY.posts.getSaved},${SUPABASE_QUERY.posts.getUsers},${SUPABASE_QUERY.posts.getComments}`
       )
       .ilike("caption", `%${searchTerm}%`);
     if (error) {
@@ -740,6 +741,77 @@ async function getSearchUser(userId, searchTearm) {
   }
 }
 
+// NOTE: only for read
+async function comments(postId) {
+  if (!postId) {
+    return;
+  }
+  try {
+    const { data, error } = await supabase
+      .from(tableNames.comments)
+      .select("users:users!comments_userId_fkey(*),*")
+      .eq("postId", postId);
+    if (error) {
+      console.error("error:", error);
+      return false;
+    }
+    return data;
+  } catch (error) {
+    console.error("error:", error);
+  }
+}
+
+// NOTE: create, update, delete
+async function handleComment(cmtObj) {
+  if (!cmtObj.action) {
+    return;
+  }
+  try {
+    const { action } = cmtObj;
+
+    if (action === COMMENTS.comment) {
+      if (cmtObj.comment) {
+        const { error } = await supabase
+          .from(tableNames.comments)
+          .insert(cmtObj.comment);
+        if (error) {
+          console.error("error:", error);
+          return false;
+        }
+        return true;
+      }
+    }
+    if (action === COMMENTS.edit) {
+      if (cmtObj.editId) {
+        const { error } = await supabase
+          .from(tableNames.comments)
+          .update(cmtObj.comment)
+          .eq("commentId", cmtObj.editId);
+        if (error) {
+          console.error("error:", error);
+          return false;
+        }
+        return true;
+      }
+    }
+    if (action === COMMENTS.deleteComment) {
+      if (cmtObj.deleteCommentId) {
+        const { error } = await supabase
+          .from(tableNames.comments)
+          .delete()
+          .eq("commentId", cmtObj.deleteCommentId);
+        if (error) {
+          console.error("error:", error);
+          return false;
+        }
+        return true;
+      }
+    }
+  } catch (error) {
+    console.error("error:", error);
+  }
+}
+
 export {
   saveUserToDB,
   getCurrentUser,
@@ -759,4 +831,6 @@ export {
   searchPosts,
   getFollowingAndFollowers,
   getSearchUser,
+  comments,
+  handleComment,
 };
