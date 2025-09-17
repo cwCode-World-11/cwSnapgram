@@ -77,7 +77,7 @@ const PostDetails = () => {
       ) : (
         <div className="post_details-card border-[#232323]">
           <img
-            src={postArr?.[0]?.imageUrl}
+            src={postArr?.[0]?.imageUrl || "/assets/icons/people.svg"}
             alt="creator"
             className="post_details-img"
           />
@@ -101,7 +101,7 @@ const PostDetails = () => {
                     {postArr?.[0]?.creator.name}
                   </p>
                   <div className="flex-center gap-2 text-light-3">
-                    <p className="subtle-semibold break-all lg:small-regular">
+                    <p className="subtle-semibold break-words lg:small-regular">
                       {formatInstagramTime(postArr?.[0]?.createdAt)}
                     </p>
                     •
@@ -113,12 +113,14 @@ const PostDetails = () => {
               </Link>
 
               <div className="flex-center sm:gap-1">
-                <Link
-                  to={`/update-post/${postArr?.[0]?.imageId}`}
+                <Button
                   className={`${
                     user?.accountId !== postArr?.[0]?.creator.accountId &&
                     "hidden"
-                  }`}
+                  } bg-[#09090a17]`}
+                  onClick={() =>
+                    navigate(`/update-post/${postArr?.[0]?.imageId}`)
+                  }
                 >
                   <img
                     src={"/assets/icons/edit.svg"}
@@ -126,7 +128,7 @@ const PostDetails = () => {
                     width={24}
                     height={24}
                   />
-                </Link>
+                </Button>
 
                 <Button
                   onClick={handleDeletePost}
@@ -134,7 +136,7 @@ const PostDetails = () => {
                   className={`ost_details-delete_btn ${
                     user?.accountId !== postArr?.[0]?.creator?.accountId &&
                     "hidden"
-                  }`}
+                  } -mx-5`}
                 >
                   <img
                     src={"/assets/icons/delete.svg"}
@@ -149,12 +151,14 @@ const PostDetails = () => {
             <hr className="border w-full border-[#1c1c1c]" />
 
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
-              <p>{postArr?.[0]?.caption}</p>
-              <ul className="flex gap-1 mt-2">
+              <p className="break-words whitespace-normal">
+                {postArr?.[0]?.caption}
+              </p>
+              <ul className="flex flex-wrap gap-1 mt-2">
                 {postArr?.[0]?.tags.map((tag, index) => (
                   <li
                     key={`${tag}${index}`}
-                    className="text-light-3 small-regular"
+                    className="text-light-3 small-regular break-words whitespace-normal"
                   >
                     #{tag}
                   </li>

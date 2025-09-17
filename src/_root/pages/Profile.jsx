@@ -99,7 +99,7 @@ const Profile = () => {
     const a = async () => {
       if (isModalOpen) {
         if (searchValue) {
-          // NOTE: so don't fetch every time from supabase. that's why i use "showUserList?.[0].type" to prevent unwanted request
+          // NOTE: so don't fetch every time from supabase while type on search in every letter.
           if (searchValue.length > 1) {
             return;
           }
@@ -339,9 +339,9 @@ const FollowingAndFollowers = ({ p }) => {
       );
       showUserListFiltered = uniqueArr.filter((list) => {
         if (
-          list.name.includes(p.searchValue) ||
-          list.username.includes(p.searchValue) ||
-          list.accountId.includes(p.searchValue)
+          list.name.toLowerCase().includes(p.searchValue.toLowerCase()) ||
+          list.username.toLowerCase().includes(p.searchValue.toLowerCase()) ||
+          list.accountId.toLowerCase().includes(p.searchValue.toLowerCase())
         ) {
           return list;
         }
@@ -354,7 +354,7 @@ const FollowingAndFollowers = ({ p }) => {
   }
 
   return (
-    <div className="sm:w-[200px] md:w-[400px] max-h-[30rem] overflow-hidden">
+    <div className="sm:w-[300px] md:w-[450px] max-h-[30rem] overflow-hidden">
       <div className="flex gap-1 px-4 w-full rounded-lg bg-[#1f1f22] mb-5">
         <img
           src="/assets/icons/search.svg"
@@ -399,7 +399,7 @@ const FollowingAndFollowers = ({ p }) => {
         </>
       )}
       {p.isListLoading && (
-        <div className="sm:w-[200px] md:w-[400px] flex-center max-h-[400px]">
+        <div className="sm:w-[300px] md:w-[450px] flex-center max-h-[400px]">
           <Loader />
         </div>
       )}
@@ -486,7 +486,10 @@ function ListUser({ user, p }) {
       >
         <div className="flex-center">
           <div className="w-[50px] h-[50px] rounded-full overflow-hidden mr-2">
-            <img src={user?.imageUrl} className="object-cover" />
+            <img
+              src={user?.imageUrl}
+              className="object-cover w-[50px] h-[50px]"
+            />
           </div>
           <span>{user?.name}</span>
         </div>

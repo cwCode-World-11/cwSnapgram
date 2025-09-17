@@ -12,7 +12,7 @@ const Saved = () => {
 
   if (isPending || !currentUser)
     return (
-      <div className="flex-center w-full h-full">
+      <div className="flex-center w-full h-screen">
         <Loader />
       </div>
     );
@@ -32,7 +32,7 @@ const Saved = () => {
       {!currentUser ? (
         <Loader />
       ) : (
-        <ul className="w-full flex justify-center max-w-5xl gap-9">
+        <ul className="w-full h-screen flex justify-center max-w-5xl gap-9">
           {savePosts.length === 0 ? (
             <p className="text-light-4">No available posts</p>
           ) : (

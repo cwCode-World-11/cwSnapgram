@@ -58,7 +58,7 @@ const PostComment = ({ p }) => {
 
   return (
     // main container: fixed height modal-like area, column layout
-    <main className="w-[400px] md:w-[80vw] max-h-[80vh] h-[80vh] bg-transparent flex flex-col">
+    <main className="w-[300px] md:w-[80vw] max-h-[80vh] h-[80vh] bg-transparent flex flex-col">
       {/* HEADER: always visible on top (title + close) */}
       <header className="flex items-center justify-between px-3 mb-3 flex-none">
         <h2 className="text-lg font-semibold">Comments</h2>
@@ -215,10 +215,14 @@ const Comments = ({ idx, p }) => {
           } relative`}
         >
           <button
-            className="flex flex-col items-center justify-center cursor-pointer rotate-90 font-extrabold px-2"
+            className={
+              "flex flex-col items-center justify-center cursor-pointer font-extrabold px-2"
+            }
             onClick={() => setOpen(!open)}
           >
-            <span>{open ? "x" : "..."}</span>
+            <span className={open ? "rotate-0" : "rotate-90"}>
+              {open ? "x" : "..."}
+            </span>
           </button>
 
           {open && (

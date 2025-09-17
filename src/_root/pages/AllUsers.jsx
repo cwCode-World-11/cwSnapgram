@@ -29,7 +29,7 @@ const AllUsers = () => {
   }, [searchValue]);
 
   return (
-    <div className="common-container custom-scrollbar">
+    <div className="common-container custom-scrollbar h-screen">
       <div className="flex gap-1 px-4 w-full rounded-lg bg-[#1f1f22]">
         <img
           src="/assets/icons/search.svg"

@@ -51,7 +51,7 @@ const Explore = () => {
 
   if (isErrorPosts) {
     return (
-      <div className="flex flex-1 custom-scrollbar">
+      <div className="flex h-screen flex-1 custom-scrollbar">
         <div className="home-container custom-scrollbar">
           <p className="body-medium text-light-1">Something bad happened</p>
         </div>
@@ -63,14 +63,14 @@ const Explore = () => {
   }
   if (!posts) {
     return (
-      <div className="flex-center w-full h-full">
+      <div className="flex-center w-full h-screen">
         <Loader />
       </div>
     );
   }
 
   return (
-    <div className="explore-container custom-scrollbar">
+    <div className="explore-container custom-scrollbar h-screen">
       <div className="explore-inner_container ">
         <h2 className="h3-bold md:h2-bold w-full">Search Posts</h2>
         <div className="flex gap-1 px-4 w-full rounded-lg bg-[#1f1f22]">
@@ -114,7 +114,9 @@ const Explore = () => {
             searchedPosts={searchedPosts}
           />
         ) : shouldShowPosts ? (
-          <p className="text-light-4 mt-10 text-center w-full ">End of posts</p>
+          <p className="text-light-4 mt-10 text-center w-full h-screen">
+            End of posts
+          </p>
         ) : (
           // posts?.map((item, index) => (
           //   <GridPostList key={`page-${index}`} posts={item} />

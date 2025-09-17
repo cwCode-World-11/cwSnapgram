@@ -127,30 +127,35 @@ const UpdateProfile = () => {
       <Modal
         isOpen={isModalOpen}
         setIsOpen={setIsModalOpen}
-        title="Are you sure want to delete your account and all posts?"
+        // title="Are you sure want to delete your account and all posts?"
         showCloseBtn={false}
       >
-        <div className="flex-center justify-end mt-5 p-1">
-          <Button
-            type="button"
-            className="shad-button_dark_4 bg-[#2b2b2b] cursor-pointer mr-3"
-            onClick={() => setIsModalOpen(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            className="shad-button_dark_4 bg-black text-red-500 border-red-500 border-1 cursor-pointer"
-            onClick={handleDeleteAccountAndPosts}
-          >
-            {isDeleteLoading ? (
-              <>
-                <Loader /> Deleting...
-              </>
-            ) : (
-              "Delete account and posts"
-            )}
-          </Button>
+        <div className="w-[300px] md:w-[500px]">
+          <h1 className="text-xl">
+            Are you sure want to delete your account and all posts?
+          </h1>
+          <div className="flex-center justify-self-end mt-5 p-1">
+            <Button
+              type="button"
+              className="shad-button_dark_4 bg-[#2b2b2b] cursor-pointer mr-3"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="shad-button_dark_4 bg-black text-red-500 border-red-500 border-1 cursor-pointer"
+              onClick={handleDeleteAccountAndPosts}
+            >
+              {isDeleteLoading ? (
+                <>
+                  <Loader /> Deleting...
+                </>
+              ) : (
+                "Delete account and posts"
+              )}
+            </Button>
+          </div>
         </div>
       </Modal>
 
@@ -270,7 +275,7 @@ const UpdateProfile = () => {
                 >
                   Delete Account
                 </Button>
-                <div className="flex gap-4 items-center justify-end">
+                <div className="flex items-center justify-end md:gap-4">
                   <Button
                     type="button"
                     className="shad-button_dark_4"

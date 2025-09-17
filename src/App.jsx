@@ -18,7 +18,15 @@ import {
   UpdateProfile,
 } from "@/_root/pages";
 
-// TODO: don't forget to change redirect url on supabase(localhost by default) for forgetPassword while deploying no need to hard code on react.
+// TODO:Mobile screen loading or empty screen fix - Done
+// TODO:Hashtags on vertical in home page and edit button and location in home page - Done
+// TODO:hashtags overflow in post details - Done
+// TODO:Comments not update in home page - Done
+// TODO:follower search lowercase in profile page - Done
+// TODO:comments 400px (maybe modal need to be fix) - Done
+// TODO:Delete account btn spacing - Done
+
+// NOTE: modal exist in comment,follower/following,delete account
 
 function App() {
   return (

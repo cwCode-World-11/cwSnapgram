@@ -1,10 +1,12 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { formatInstagramTime } from "../lib/utils";
 import PostStats from "./PostStats";
 import { useAuth } from "../context/AuthContext";
+import { Button } from "./ui/button";
 
 const PostCard = ({ post }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   if (!post.creator) {
     console.log("post.creator:", post);
@@ -16,14 +18,18 @@ const PostCard = ({ post }) => {
       <div className="flex-between">
         <div className="flex items-center gap-3">
           <Link to={`/profile/${post.creator.accountId}`}>
-            <img
-              src={
-                post.creator?.imageUrl ||
-                "/assets/icons/profile-placeholder.svg"
-              }
-              alt="creator"
-              className="w-12 object-cover h-12 rounded-full"
-            />
+            <div className="w-12 h-12 overflow-hidden">
+              <img
+                src={
+                  post.creator?.imageUrl ||
+                  "/assets/icons/profile-placeholder.svg"
+                }
+                alt="creator"
+                className="w-12 object-cover h-12 rounded-full"
+                width={48}
+                height={48}
+              />
+            </div>
           </Link>
 
           <div className="flex flex-col">
@@ -35,18 +41,18 @@ const PostCard = ({ post }) => {
                 {formatInstagramTime(post.updatedAt)}
               </p>
               •
-              <p className="subtle-semibold lg:small-regular">
+              <p className="truncate subtle-semibold w-20 lg:small-regular lg:w-80">
                 {post.location}
               </p>
             </div>
           </div>
         </div>
 
-        <Link
-          to={`/update-post/${post?.imageId}`}
+        <Button
+          onClick={() => navigate(`/update-post/${post?.imageId}`)}
           className={`${
             user?.accountId !== post?.creator?.accountId && "hidden"
-          }`}
+          } bg-[#09090a]`}
         >
           <img
             src={"/assets/icons/edit.svg"}
@@ -54,14 +60,17 @@ const PostCard = ({ post }) => {
             width={20}
             height={20}
           />
-        </Link>
+        </Button>
       </div>
       <Link to={`/posts/${post.imageId}`}>
-        <div className="small-medium text-ellipsis break-all lg:base-medium py-5">
+        <div className="small-medium text-ellipsis break-words lg:base-medium py-5">
           <p>{post.caption}</p>
-          <ul className="flex gap-1 mt-2">
+          <ul className="flex flex-wrap gap-1 mt-2">
             {post.tags.map((tag, index) => (
-              <li key={`${tag}${index}`} className="text-light-3 small-regular">
+              <li
+                key={`${tag}${index}`}
+                className="text-light-3 small-regular break-words whitespace-normal"
+              >
                 #{tag}
               </li>
             ))}

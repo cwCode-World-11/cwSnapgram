@@ -295,6 +295,7 @@ export const useCommentRead = (postId) => {
       QUERY_KEYS.GET_POST_BY_ID,
       QUERY_KEYS.GET_USER_POSTS,
       QUERY_KEYS.GET_INFINITE_POSTS,
+      postId,
     ],
     queryFn: () => comments(postId),
     enabled: !!postId,
@@ -308,12 +309,16 @@ export const useHandleComment = () => {
     mutationFn: (cmtObj) => handleComment(cmtObj),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          QUERY_KEYS.GET_POSTS,
-          QUERY_KEYS.GET_POST_BY_ID,
-          QUERY_KEYS.GET_USER_POSTS,
-          QUERY_KEYS.GET_INFINITE_POSTS,
-        ],
+        queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
       });
     },
   });
