@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { Button } from "./ui/button";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router";
+import { useNavigate,Navigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { logOut } from "../supabase/auth";
 
